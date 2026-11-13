@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Descarga cruda del IGN (~140 MB): se regenera con scripts/descargar_limites.py
+data/raw/
+
+# Mapas generados
+output/
+
+# Editores / sistema
+.DS_Store
+.vscode/
+.idea/
+.ipynb_checkpoints/

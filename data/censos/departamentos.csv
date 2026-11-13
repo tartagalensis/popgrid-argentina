@@ -1,0 +1,529 @@
+codigo,provincia,nombre,pob_2001,pob_2010,pob_2022
+02007,CABA,Comuna 1,171975,205886,223554
+02014,CABA,Comuna 2,165494,157932,161645
+02021,CABA,Comuna 3,184015,187537,196240
+02028,CABA,Comuna 4,215539,218245,229240
+02035,CABA,Comuna 5,173769,179005,194271
+02042,CABA,Comuna 6,170309,176076,203043
+02049,CABA,Comuna 7,197333,220591,215896
+02056,CABA,Comuna 8,161642,187237,204367
+02063,CABA,Comuna 9,155967,161797,169063
+02070,CABA,Comuna 10,163209,166022,173004
+02077,CABA,Comuna 11,189666,189832,204601
+02084,CABA,Comuna 12,191122,200116,236887
+02091,CABA,Comuna 13,228226,231331,264385
+02098,CABA,Comuna 14,225245,225970,248635
+02105,CABA,Comuna 15,182627,182574,196876
+06007,Buenos Aires,Adolfo Alsina,16245,17072,17552
+06014,Buenos Aires,Adolfo Gonzales Chaves,12037,12047,12914
+06021,Buenos Aires,Alberti,10373,10654,12982
+06028,Buenos Aires,Almirante Brown,515556,552902,584827
+06035,Buenos Aires,Avellaneda,328980,342677,367554
+06042,Buenos Aires,Ayacucho,19669,20337,21977
+06049,Buenos Aires,Azul,62996,65280,75905
+06056,Buenos Aires,Bahía Blanca,284776,301572,336557
+06063,Buenos Aires,Balcarce,42039,43823,48982
+06070,Buenos Aires,Baradero,29562,32761,40002
+06077,Buenos Aires,Arrecifes,27279,29044,32215
+06084,Buenos Aires,Benito Juárez,19443,20239,22292
+06091,Buenos Aires,Berazategui,287913,324244,358712
+06098,Buenos Aires,Berisso,80092,88470,100930
+06105,Buenos Aires,Bolívar,32442,34190,37594
+06112,Buenos Aires,Bragado,40259,41336,46504
+06119,Buenos Aires,Brandsen,22515,26367,32448
+06126,Buenos Aires,Campana,83698,94461,110566
+06134,Buenos Aires,Cañuelas,42575,51892,70684
+06140,Buenos Aires,Capitán Sarmiento,12854,14494,15965
+06147,Buenos Aires,Carlos Casares,21125,22237,23100
+06154,Buenos Aires,Carlos Tejedor,11539,11570,14079
+06161,Buenos Aires,Carmen de Areco,13992,14692,17499
+06168,Buenos Aires,Castelli,7852,8205,9594
+06175,Buenos Aires,Colón,23179,24890,27504
+06182,Buenos Aires,Coronel de Marina Leonardo Rosales,60892,62152,67503
+06189,Buenos Aires,Coronel Dorrego,16522,15825,15968
+06196,Buenos Aires,Coronel Pringles,23794,22933,24420
+06203,Buenos Aires,Coronel Suárez,36828,38320,42110
+06210,Buenos Aires,Chacabuco,45445,48703,52729
+06218,Buenos Aires,Chascomús,38647,42277,42452
+06224,Buenos Aires,Chivilcoy,60762,64185,70839
+06231,Buenos Aires,Daireaux,15857,16889,18422
+06238,Buenos Aires,Dolores,25216,27042,32032
+06245,Buenos Aires,Ensenada,51448,56729,63997
+06252,Buenos Aires,Escobar,178155,213619,256268
+06260,Buenos Aires,Esteban Echeverría,243974,300959,338480
+06266,Buenos Aires,Exaltación de la Cruz,24167,29805,40159
+06270,Buenos Aires,Ezeiza,118807,163722,201511
+06274,Buenos Aires,Florencio Varela,348970,426005,496433
+06277,Buenos Aires,Florentino Ameghino,8171,8869,10790
+06280,Buenos Aires,General Alvarado,34391,39594,45526
+06287,Buenos Aires,General Alvear,10897,11130,12631
+06294,Buenos Aires,General Arenales,14876,14903,16350
+06301,Buenos Aires,General Belgrano,15381,17365,20791
+06308,Buenos Aires,General Guido,2771,2816,3174
+06315,Buenos Aires,General Juan Madariaga,18286,19747,22624
+06322,Buenos Aires,General La Madrid,10984,10783,11618
+06329,Buenos Aires,General Las Heras,12799,14889,18022
+06336,Buenos Aires,General Lavalle,3063,3700,4870
+06343,Buenos Aires,General Paz,10319,11202,14207
+06351,Buenos Aires,General Pinto,11129,11261,12941
+06357,Buenos Aires,General Pueyrredón,564056,618989,667082
+06364,Buenos Aires,General Rodríguez,67931,87185,142709
+06371,Buenos Aires,General San Martín,403107,414196,450518
+06385,Buenos Aires,General Viamonte,17641,18078,22649
+06392,Buenos Aires,General Villegas,28960,30864,35251
+06399,Buenos Aires,Guaminí,11257,11826,11801
+06406,Buenos Aires,Hipólito Yrigoyen,8819,9585,10661
+06408,Buenos Aires,Hurlingham,172245,181241,185641
+06410,Buenos Aires,Ituzaingó,158121,167824,180232
+06412,Buenos Aires,José C. Paz,230208,265981,326992
+06413,Buenos Aires,Junín,88664,90305,103787
+06420,Buenos Aires,La Costa,60483,69633,100689
+06427,Buenos Aires,La Matanza,1255288,1775816,1841247
+06434,Buenos Aires,Lanús,453082,459263,461267
+06441,Buenos Aires,La Plata,574369,654324,768547
+06448,Buenos Aires,Laprida,9683,10210,11646
+06455,Buenos Aires,Las Flores,23551,23871,27239
+06462,Buenos Aires,Leandro N. Alem,16358,16799,17266
+06466,Buenos Aires,Lezama,,,6221
+06469,Buenos Aires,Lincoln,41127,41808,45506
+06476,Buenos Aires,Lobería,17008,17523,18243
+06483,Buenos Aires,Lobos,33141,36172,41760
+06490,Buenos Aires,Lomas de Zamora,591345,616279,690480
+06497,Buenos Aires,Luján,93992,106273,111251
+06505,Buenos Aires,Magdalena,16603,19301,26613
+06511,Buenos Aires,Maipú,10193,10188,11323
+06515,Buenos Aires,Malvinas Argentinas,290691,322375,350674
+06518,Buenos Aires,Mar Chiquita,17908,21279,33110
+06525,Buenos Aires,Marcos Paz,43400,54181,67011
+06532,Buenos Aires,Mercedes,59870,63284,72980
+06539,Buenos Aires,Merlo,469985,528494,582486
+06547,Buenos Aires,Monte,17488,21034,24868
+06553,Buenos Aires,Monte Hermoso,5602,6499,8465
+06560,Buenos Aires,Moreno,380503,452505,576632
+06568,Buenos Aires,Morón,309380,321109,331183
+06574,Buenos Aires,Navarro,15797,17054,19899
+06581,Buenos Aires,Necochea,89096,92933,102110
+06588,Buenos Aires,9 de Julio,45998,47722,52607
+06595,Buenos Aires,Olavarría,103961,111708,125751
+06602,Buenos Aires,Patagones,27938,30207,37646
+06609,Buenos Aires,Pehuajó,38400,39776,44783
+06616,Buenos Aires,Pellegrini,6030,5887,7143
+06623,Buenos Aires,Pergamino,99193,104590,115340
+06630,Buenos Aires,Pila,3318,3640,4642
+06638,Buenos Aires,Pilar,232463,299077,394754
+06644,Buenos Aires,Pinamar,20666,25728,39449
+06648,Buenos Aires,Presidente Perón,60191,81141,102106
+06651,Buenos Aires,Puán,16381,15743,16613
+06655,Buenos Aires,Punta Indio,9362,9888,12297
+06658,Buenos Aires,Quilmes,518788,582943,633391
+06665,Buenos Aires,Ramallo,29179,33042,39730
+06672,Buenos Aires,Rauch,14434,15176,16635
+06679,Buenos Aires,Rivadavia,15452,17143,19849
+06686,Buenos Aires,Rojas,22842,23432,25627
+06693,Buenos Aires,Roque Pérez,10902,12513,13977
+06700,Buenos Aires,Saavedra,19715,20749,22347
+06707,Buenos Aires,Saladillo,29600,32103,35656
+06714,Buenos Aires,Salto,29189,32653,39425
+06721,Buenos Aires,Salliqueló,8682,8644,9427
+06728,Buenos Aires,San Andrés de Giles,20829,23027,26510
+06735,Buenos Aires,San Antonio de Areco,21333,23138,26897
+06742,Buenos Aires,San Cayetano,8119,8399,8994
+06749,Buenos Aires,San Fernando,151131,163240,171616
+06756,Buenos Aires,San Isidro,291505,292878,297282
+06760,Buenos Aires,San Miguel,253086,276190,328835
+06763,Buenos Aires,San Nicolás,137867,145857,168041
+06770,Buenos Aires,San Pedro,55234,59036,68613
+06778,Buenos Aires,San Vicente,44529,59478,98215
+06784,Buenos Aires,Suipacha,8904,10081,11786
+06791,Buenos Aires,Tandil,108109,123871,145575
+06798,Buenos Aires,Tapalqué,8296,9178,10783
+06805,Buenos Aires,Tigre,301223,376381,446949
+06812,Buenos Aires,Tordillo,1742,1764,2542
+06819,Buenos Aires,Tornquist,11759,12723,14810
+06826,Buenos Aires,Trenque Lauquen,40181,43021,49499
+06833,Buenos Aires,Tres Arroyos,57244,57110,62426
+06840,Buenos Aires,Tres de Febrero,336467,340071,364176
+06847,Buenos Aires,Tres Lomas,7439,8700,9164
+06854,Buenos Aires,25 de Mayo,34877,35842,35563
+06861,Buenos Aires,Vicente López,274082,269420,282280
+06868,Buenos Aires,Villa Gesell,24282,31730,37463
+06875,Buenos Aires,Villarino,26517,31014,32717
+06882,Buenos Aires,Zárate,101271,114269,132221
+10007,Catamarca,Ambato,4525,4463,5129
+10014,Catamarca,Ancasti,3082,2917,3302
+10021,Catamarca,Andalgalá,17102,18132,19678
+10028,Catamarca,Antofagasta de la Sierra,1282,1436,2022
+10035,Catamarca,Belén,25475,27843,30569
+10042,Catamarca,Capayán,14137,16085,19885
+10049,Catamarca,Capital,141260,159703,186947
+10056,Catamarca,El Alto,3400,3570,4375
+10063,Catamarca,Fray Mamerto Esquiú,10658,11896,14625
+10070,Catamarca,La Paz,21061,22638,26370
+10077,Catamarca,Paclín,4290,4185,4725
+10084,Catamarca,Pomán,9543,10776,12260
+10091,Catamarca,Santa María,22127,22548,26929
+10098,Catamarca,Santa Rosa,10349,12034,13322
+10105,Catamarca,Tinogasta,22570,22360,25395
+10112,Catamarca,Valle Viejo,23707,27242,34029
+14007,Córdoba,Calamuchita,45418,54730,75911
+14014,Córdoba,Capital,1284582,1329604,1505250
+14021,Córdoba,Colón,171067,225151,295725
+14028,Córdoba,Cruz del Eje,52172,58759,67112
+14035,Córdoba,General Roca,33323,35645,36242
+14042,Córdoba,General San Martín,116107,127454,154269
+14049,Córdoba,Ischilín,30105,31312,36074
+14056,Córdoba,Juárez Celman,55348,61078,68631
+14063,Córdoba,Marcos Juárez,99761,104205,107764
+14070,Córdoba,Minas,4881,4727,4870
+14077,Córdoba,Pocho,5132,5380,5123
+14084,Córdoba,Presidente Roque Sáenz Peña,34647,36282,37726
+14091,Córdoba,Punilla,155124,178401,221273
+14098,Córdoba,Río Cuarto,229728,246393,279923
+14105,Córdoba,Río Primero,42429,46675,58428
+14112,Córdoba,Río Seco,12635,13242,15302
+14119,Córdoba,Río Segundo,95803,103718,113950
+14126,Córdoba,San Alberto,32395,37004,42166
+14133,Córdoba,San Javier,48951,53520,63377
+14140,Córdoba,San Justo,190182,206307,230339
+14147,Córdoba,Santa María,86083,98188,144829
+14154,Córdoba,Sobremonte,4531,4591,4503
+14161,Córdoba,Tercero Arriba,107460,109554,120918
+14168,Córdoba,Totoral,16479,18556,22495
+14175,Córdoba,Tulumba,12211,12673,14134
+14182,Córdoba,Unión,100247,105727,114571
+18007,Corrientes,Bella Vista,35350,37181,44406
+18014,Corrientes,Berón de Astrada,2294,2461,2826
+18021,Corrientes,Capital,328868,358223,439270
+18028,Corrientes,Concepción,18411,21113,26282
+18035,Corrientes,Curuzú Cuatiá,42075,44384,51532
+18042,Corrientes,Empedrado,14721,15109,17968
+18049,Corrientes,Esquina,30372,30802,39185
+18056,Corrientes,General Alvear,8147,7926,9145
+18063,Corrientes,General Paz,14775,14836,17020
+18070,Corrientes,Goya,87349,89959,106371
+18077,Corrientes,Itatí,8774,9171,12010
+18084,Corrientes,Ituzaingó,30565,31150,38837
+18091,Corrientes,Lavalle,26250,28759,40448
+18098,Corrientes,Mburucuyá,9012,9252,11568
+18105,Corrientes,Mercedes,39206,40667,49882
+18112,Corrientes,Monte Caseros,33684,36338,45670
+18119,Corrientes,Paso de los Libres,46326,48642,56989
+18126,Corrientes,Saladas,21470,22244,29198
+18133,Corrientes,San Cosme,13189,14381,19706
+18140,Corrientes,San Luis del Palmar,16513,17590,21459
+18147,Corrientes,San Martín,12236,13140,15187
+18154,Corrientes,San Miguel,10252,10572,12713
+18161,Corrientes,San Roque,17951,18366,22715
+18168,Corrientes,Santo Tomé,54050,61297,71927
+18175,Corrientes,Sauce,9151,9032,10382
+22007,Chaco,Almirante Brown,29086,34075,37851
+22014,Chaco,Bermejo,24215,25052,28144
+22021,Chaco,Comandante Fernández,88164,96944,101960
+22028,Chaco,Chacabuco,27813,30590,34598
+22036,Chaco,12 de Octubre,20149,22281,23222
+22039,Chaco,2 de Abril,7435,7432,8319
+22043,Chaco,Fray Justo Santa María de Oro,10485,11826,10653
+22049,Chaco,General Belgrano,10470,11988,12807
+22056,Chaco,General Donovan,13385,13490,15096
+22063,Chaco,General Güemes,62227,67132,68525
+22070,Chaco,Independencia,20620,22411,21996
+22077,Chaco,Libertad,10822,12158,13807
+22084,Chaco,Libertador General San Martín,54470,59147,65686
+22091,Chaco,Maipú,24747,25288,26416
+22098,Chaco,Mayor Luis J. Fontana,53550,55080,59965
+22105,Chaco,9 de Julio,26955,28555,30258
+22112,Chaco,O'Higgins,19231,20131,21579
+22119,Chaco,Presidencia de la Plaza,12231,12499,13956
+22126,Chaco,1º de Mayo,9131,10322,14279
+22133,Chaco,Quitilipi,32083,34081,32642
+22140,Chaco,San Fernando,365637,390874,416140
+22147,Chaco,San Lorenzo,14252,14702,16062
+22154,Chaco,Sargento Cabral,15030,15889,18793
+22161,Chaco,Tapenagá,4188,4097,4059
+22168,Chaco,25 de Mayo,28070,29215,32793
+26007,Chubut,Biedma,58677,82883,103173
+26014,Chubut,Cushamen,17134,20919,28209
+26021,Chubut,Escalante,143689,186583,215453
+26028,Chubut,Florentino Ameghino,1484,1627,1786
+26035,Chubut,Futaleufú,37540,43076,50316
+26042,Chubut,Gaiman,9612,11141,12639
+26049,Chubut,Gastre,1508,1427,1195
+26056,Chubut,Languiñeo,3017,3085,2884
+26063,Chubut,Mártires,977,778,754
+26070,Chubut,Paso de Indios,1905,1867,1886
+26077,Chubut,Rawson,115829,131313,145763
+26084,Chubut,Río Senguer,6194,5979,6366
+26091,Chubut,Sarmiento,8724,11396,14596
+26098,Chubut,Tehuelches,5159,5390,5978
+26105,Chubut,Telsen,1788,1644,1623
+30008,Entre Ríos,Colón,52718,62160,75305
+30015,Entre Ríos,Concordia,157291,170033,198802
+30021,Entre Ríos,Diamante,44095,46361,53595
+30028,Entre Ríos,Federación,60204,68736,78691
+30035,Entre Ríos,Federal,25055,25863,29667
+30042,Entre Ríos,Feliciano,14584,15079,16803
+30049,Entre Ríos,Gualeguay,48147,51883,57303
+30056,Entre Ríos,Gualeguaychú,101350,109461,126147
+30063,Entre Ríos,Islas del Ibicuy,11498,12077,14000
+30070,Entre Ríos,La Paz,66158,66903,75407
+30077,Entre Ríos,Nogoyá,38840,39026,43195
+30084,Entre Ríos,Paraná,319614,339930,391696
+30088,Entre Ríos,San Salvador,16118,17357,20854
+30091,Entre Ríos,Tala,25892,25665,31309
+30098,Entre Ríos,Uruguay,94070,100728,116356
+30105,Entre Ríos,Victoria,34097,35767,40652
+30113,Entre Ríos,Villaguay,48416,48965,55796
+34007,Formosa,Bermejo,12710,14046,15644
+34014,Formosa,Formosa,210071,234354,269589
+34021,Formosa,Laishi,16227,17063,19303
+34028,Formosa,Matacos,12133,14375,17032
+34035,Formosa,Patiño,64830,68581,81819
+34042,Formosa,Pilagás,17523,18399,19116
+34049,Formosa,Pilcomayo,78114,85024,94383
+34056,Formosa,Pirané,64023,64566,72804
+34063,Formosa,Ramón Lista,10928,13754,17729
+38007,Jujuy,Cochinoca,12111,12656,15054
+38014,Jujuy,El Carmen,84667,97039,122366
+38021,Jujuy,Dr. Manuel Belgrano,238012,265249,320990
+38028,Jujuy,Humahuaca,16765,17366,20914
+38035,Jujuy,Ledesma,75716,81790,94252
+38042,Jujuy,Palpalá,48199,52631,65541
+38049,Jujuy,Rinconada,2298,2488,1802
+38056,Jujuy,San Antonio,3698,4466,6729
+38063,Jujuy,San Pedro,71037,75037,88241
+38070,Jujuy,Santa Bárbara,17115,17730,20499
+38077,Jujuy,Santa Catalina,3140,2800,2646
+38084,Jujuy,Susques,3628,3791,4098
+38094,Jujuy,Tilcara,10403,12349,14721
+38098,Jujuy,Tumbaya,4553,4658,5381
+38105,Jujuy,Valle Grande,2386,2451,2509
+38112,Jujuy,Yavi,18160,20806,25868
+42007,La Pampa,Atreucó,10134,10153,11138
+42014,La Pampa,Caleu Caleu,2075,2313,2611
+42021,La Pampa,Capital,96920,105312,119632
+42028,La Pampa,Catriló,6728,7293,8235
+42035,La Pampa,Conhelo,14591,14077,15186
+42042,La Pampa,Curacó,886,1040,1116
+42049,La Pampa,Chalileo,2517,2985,2885
+42056,La Pampa,Chapaleufú,10787,11620,12334
+42063,La Pampa,Chical Co,1595,1502,1466
+42070,La Pampa,Guatraché,9306,8831,9517
+42077,La Pampa,Hucal,7838,7540,7787
+42084,La Pampa,Lihuel Calel,547,439,443
+42091,La Pampa,Limay Mahuida,475,503,423
+42098,La Pampa,Loventué,8649,8619,9322
+42105,La Pampa,Maracó,54699,59024,69514
+42112,La Pampa,Puelén,7757,9468,11654
+42119,La Pampa,Quemú Quemú,8756,8663,8460
+42126,La Pampa,Rancul,10648,10668,11133
+42133,La Pampa,Realicó,15302,16227,17470
+42140,La Pampa,Toay,9256,12409,18029
+42147,La Pampa,Trenel,5324,5426,5702
+42154,La Pampa,Utracán,14504,14839,17802
+46007,La Rioja,Arauco,13720,15418,16257
+46014,La Rioja,Capital,146411,180995,211651
+46021,La Rioja,Castro Barros,4322,4268,5810
+46028,La Rioja,General Felipe Varela,9939,9648,11372
+46035,La Rioja,Chamical,13383,14160,15666
+46042,La Rioja,Chilecito,42248,49432,58798
+46049,La Rioja,Famatina,6371,5863,7002
+46056,La Rioja,Ángel Vicente Peñaloza,3127,3073,3185
+46063,La Rioja,General Belgrano,7161,7370,7618
+46070,La Rioja,General Juan Facundo Quiroga,4546,4108,4017
+46077,La Rioja,General Lamadrid,1717,1734,1886
+46084,La Rioja,General Ortiz de Ocampo,7331,7145,7349
+46091,La Rioja,General San Martín,4956,4944,5019
+46098,La Rioja,Vinchina,2834,2731,2699
+46105,La Rioja,Independencia,2405,2427,2401
+46112,La Rioja,Rosario Vera Peñaloza,13299,14054,15783
+46119,La Rioja,San Blas de los Sauces,4048,3927,4314
+46126,La Rioja,Sanagasta,2165,2345,3038
+50007,Mendoza,Capital,110993,115041,127160
+50014,Mendoza,General Alvear,44147,46429,52584
+50021,Mendoza,Godoy Cruz,182977,191903,195159
+50028,Mendoza,Guaymallén,251339,283803,321966
+50035,Mendoza,Junín,35045,37859,46604
+50042,Mendoza,La Paz,9560,10012,12086
+50049,Mendoza,Las Heras,182962,203666,234401
+50056,Mendoza,Lavalle,32129,36738,47167
+50063,Mendoza,Luján de Cuyo,104470,119888,175056
+50070,Mendoza,Maipú,153600,172332,219402
+50077,Mendoza,Malargüe,23020,27660,32717
+50084,Mendoza,Rivadavia,52567,56373,63724
+50091,Mendoza,San Carlos,28341,32631,39869
+50098,Mendoza,San Martín,108448,118220,139792
+50105,Mendoza,San Rafael,173571,188018,215020
+50112,Mendoza,Santa Rosa,15818,16374,19382
+50119,Mendoza,Tunuyán,42125,49458,60171
+50126,Mendoza,Tupungato,28539,32524,41280
+54007,Misiones,Apóstoles,38028,42249,50597
+54014,Misiones,Cainguás,47271,53403,59953
+54021,Misiones,Candelaria,22290,27040,35318
+54028,Misiones,Capital,284279,324756,392919
+54035,Misiones,Concepción,9085,9577,10348
+54042,Misiones,Eldorado,67726,78221,91728
+54049,Misiones,General Manuel Belgrano,33488,42902,45570
+54056,Misiones,Guaraní,57818,67897,77160
+54063,Misiones,Iguazú,66539,82227,100096
+54070,Misiones,Leandro N. Alem,41670,45075,49797
+54077,Misiones,Libertador General San Martín,42440,46561,52428
+54084,Misiones,Montecarlo,34073,36745,38669
+54091,Misiones,Oberá,95667,107501,121701
+54098,Misiones,San Ignacio,55038,57728,63394
+54105,Misiones,San Javier,19187,20906,23503
+54112,Misiones,San Pedro,23736,31051,34801
+54119,Misiones,25 de Mayo,27187,27754,30891
+58007,Neuquén,Aluminé,6308,8306,10244
+58014,Neuquén,Añelo,7554,10786,18166
+58021,Neuquén,Catán Lil,2469,2155,2676
+58028,Neuquén,Collón Curá,4395,4532,4835
+58035,Neuquén,Confluencia,314793,362673,468794
+58042,Neuquén,Chos Malal,14185,15256,18368
+58049,Neuquén,Huiliches,12700,14725,20973
+58056,Neuquén,Lácar,24670,29748,39596
+58063,Neuquén,Loncopué,6457,6925,7698
+58070,Neuquén,Los Lagos,8654,11998,15555
+58077,Neuquén,Minas,7072,7234,9267
+58084,Neuquén,Ñorquín,4628,4692,5609
+58091,Neuquén,Pehuenches,13765,24087,29753
+58098,Neuquén,Picún Leufú,4272,4578,5087
+58105,Neuquén,Picunches,6427,7022,8495
+58112,Neuquén,Zapala,35806,36549,45698
+62007,Río Negro,Adolfo Alsina,50701,57678,64482
+62014,Río Negro,Avellaneda,32308,35323,41352
+62021,Río Negro,Bariloche,109826,133500,162088
+62028,Río Negro,Conesa,6291,7069,7429
+62035,Río Negro,El Cuy,4252,5280,6960
+62042,Río Negro,General Roca,281653,320921,380525
+62049,Río Negro,9 de Julio,3501,3475,3719
+62056,Río Negro,Ñorquinco,2079,1736,1452
+62063,Río Negro,Pichi Mahuida,14026,14107,16551
+62070,Río Negro,Pilcaniyeu,6114,7428,9373
+62077,Río Negro,San Antonio,23972,29284,35800
+62084,Río Negro,Valcheta,4946,7101,4319
+62091,Río Negro,25 de Mayo,13153,15743,16718
+66007,Salta,Anta,49841,57411,70170
+66014,Salta,Cachi,7280,7315,8948
+66021,Salta,Cafayate,11785,14850,17829
+66028,Salta,Capital,472971,536113,627704
+66035,Salta,Cerrillos,26320,35789,55949
+66042,Salta,Chicoana,18248,20710,24729
+66049,Salta,General Güemes,42255,47226,56166
+66056,Salta,General José de San Martín,139204,156910,178004
+66063,Salta,Guachipas,3211,3187,3491
+66070,Salta,Iruya,6368,5987,6118
+66077,Salta,La Caldera,5711,7763,12299
+66084,Salta,La Candelaria,5286,5704,7205
+66091,Salta,La Poma,1735,1738,1789
+66098,Salta,La Viña,7152,7435,8900
+66105,Salta,Los Andes,5630,6050,7182
+66112,Salta,Metán,39006,40351,48245
+66119,Salta,Molinos,5565,5652,5820
+66126,Salta,Orán,124029,138838,160642
+66133,Salta,Rivadavia,27370,30357,38113
+66140,Salta,Rosario de la Frontera,28013,28993,33809
+66147,Salta,Rosario de Lerma,33741,38702,51028
+66154,Salta,San Carlos,7208,7016,7798
+66161,Salta,Santa Victoria,11122,10344,9413
+70007,San Juan,Albardón,20413,23888,31284
+70014,San Juan,Angaco,7570,8125,10176
+70021,San Juan,Calingasta,8176,8588,11034
+70028,San Juan,Capital,112778,109123,115390
+70035,San Juan,Caucete,33609,38343,44047
+70042,San Juan,Chimbas,73829,87258,105627
+70049,San Juan,Iglesia,6737,9099,8845
+70056,San Juan,Jáchal,21018,21730,25297
+70063,San Juan,9 de Julio,7652,9307,12514
+70070,San Juan,Pocito,40969,53162,72915
+70077,San Juan,Rawson,107740,114368,136617
+70084,San Juan,Rivadavia,76150,82641,101666
+70091,San Juan,San Martín,10140,11115,15037
+70098,San Juan,Santa Lucía,43565,48087,62729
+70105,San Juan,Sarmiento,19092,22131,27188
+70112,San Juan,Ullum,4490,4886,6454
+70119,San Juan,Valle Fértil,6864,7222,8526
+70126,San Juan,25 de Mayo,15193,17119,20824
+70133,San Juan,Zonda,4038,4863,6683
+74007,San Luis,Ayacucho,16906,19087,23913
+74014,San Luis,Belgrano,3881,3985,5583
+74021,San Luis,Coronel Pringles,12571,13157,16049
+74028,San Luis,Chacabuco,18410,20744,26557
+74035,San Luis,General Pedernera,110814,125899,148875
+74042,San Luis,Gobernador Dupuy,11120,11779,14343
+74049,San Luis,Junín,20271,28933,40361
+74056,San Luis,Juan Martín de Pueyrredón,168771,204019,261697
+74063,San Luis,Libertador General San Martín,5189,4707,4691
+78007,Santa Cruz,Corpen Aike,7942,11093,15171
+78014,Santa Cruz,Deseado,72953,107630,126743
+78021,Santa Cruz,Güer Aike,92878,113267,137895
+78028,Santa Cruz,Lago Argentino,7500,18864,25586
+78035,Santa Cruz,Lago Buenos Aires,6223,8750,12606
+78042,Santa Cruz,Magallanes,6536,9202,12911
+78049,Santa Cruz,Río Chico,2926,5158,6314
+82007,Santa Fe,Belgrano,41449,44788,48781
+82014,Santa Fe,Caseros,79096,82100,86912
+82021,Santa Fe,Castellanos,162165,178092,190577
+82028,Santa Fe,Constitución,83045,86910,93441
+82035,Santa Fe,Garay,19913,20890,24927
+82042,Santa Fe,General López,182113,191024,201574
+82049,Santa Fe,General Obligado,166436,176410,197986
+82056,Santa Fe,Iriondo,65486,66675,74504
+82063,Santa Fe,La Capital,489505,525093,572265
+82070,Santa Fe,Las Colonias,95202,104946,115740
+82077,Santa Fe,9 de Julio,28273,29832,30995
+82084,Santa Fe,Rosario,1121441,1193605,1348725
+82091,Santa Fe,San Cristóbal,64935,68878,72801
+82098,Santa Fe,San Javier,29912,30959,33274
+82105,Santa Fe,San Jerónimo,77253,80840,87307
+82112,Santa Fe,San Justo,40379,40904,46665
+82119,Santa Fe,San Lorenzo,142097,157255,194580
+82126,Santa Fe,San Martín,60698,63842,67827
+82133,Santa Fe,Vera,51303,51494,56027
+86007,Santiago del Estero,Aguirre,7035,7610,8970
+86014,Santiago del Estero,Alberdi,15617,17252,20104
+86021,Santiago del Estero,Atamisqui,9809,10923,14903
+86028,Santiago del Estero,Avellaneda,19348,20763,25476
+86035,Santiago del Estero,Banda,128387,142279,170651
+86042,Santiago del Estero,Belgrano,7950,9243,10813
+86049,Santiago del Estero,Capital,244567,267125,330112
+86056,Santiago del Estero,Copo,26984,31404,35741
+86063,Santiago del Estero,Choya,33720,34667,43736
+86070,Santiago del Estero,Figueroa,17495,17820,20270
+86077,Santiago del Estero,General Taboada,36683,38105,46508
+86084,Santiago del Estero,Guasayán,7404,7602,9255
+86091,Santiago del Estero,Jiménez,13170,14352,18625
+86098,Santiago del Estero,Juan Felipe Ibarra,16937,18051,20589
+86105,Santiago del Estero,Loreto,17442,20036,24060
+86112,Santiago del Estero,Mitre,1813,1890,1440
+86119,Santiago del Estero,Moreno,28053,32130,40460
+86126,Santiago del Estero,Ojo de Agua,13352,14008,15116
+86133,Santiago del Estero,Pellegrini,19517,20514,26193
+86140,Santiago del Estero,Quebrachos,11331,10568,12354
+86147,Santiago del Estero,Río Hondo,50781,54867,66761
+86154,Santiago del Estero,Rivadavia,4916,5015,5315
+86161,Santiago del Estero,Robles,40060,44415,54015
+86168,Santiago del Estero,Salavina,10664,11217,12787
+86175,Santiago del Estero,San Martín,9148,9831,11848
+86182,Santiago del Estero,Sarmiento,4669,4607,5038
+86189,Santiago del Estero,Silípica,7605,7712,9766
+90007,Tucumán,Burruyacú,32936,36951,45476
+90014,Tucumán,Cruz Alta,162240,180499,228077
+90021,Tucumán,Chicligasta,75133,80735,92608
+90028,Tucumán,Famaillá,30951,34542,42702
+90035,Tucumán,Graneros,13063,13551,15540
+90042,Tucumán,Juan Bautista Alberdi,28206,30237,34766
+90049,Tucumán,La Cocha,17683,19002,21218
+90056,Tucumán,Leales,51090,54949,66392
+90063,Tucumán,Lules,57235,68474,93552
+90070,Tucumán,Monteros,58442,63641,77551
+90077,Tucumán,Río Chico,52925,56847,64962
+90084,Tucumán,Capital,527607,548866,590342
+90091,Tucumán,Simoca,29932,30876,36973
+90098,Tucumán,Tafí del Valle,13883,14933,22440
+90105,Tucumán,Tafí Viejo,108017,121638,172986
+90112,Tucumán,Trancas,15473,17371,23494
+90119,Tucumán,Yerba Buena,63707,75076,102741
+94008,Tierra del Fuego,Río Grande,55131,70042,99241
+94011,Tierra del Fuego,Tolhuin,,,6039
+94015,Tierra del Fuego,Ushuaia,45785,56956,80371
+94028,Tierra del Fuego,Antártida Argentina e Islas del Atlántico Sur,163,207,81

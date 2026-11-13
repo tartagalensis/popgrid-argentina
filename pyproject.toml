@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "popgrid-argentina"
+version = "0.1.0"
+description = "Mapas de bloques (popgrid) de las provincias argentinas y los departamentos de Salta, censo a censo"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+dependencies = [
+    "popgrid>=0.7.2",
+    "geopandas>=0.14",
+    "pandas>=2.0",
+    "matplotlib>=3.7",
+    "requests>=2.28",
+    "openpyxl>=3.1",   # cuadros .xlsx del Censo 2022
+    "xlrd>=2.0",       # cuadros .xls del Censo 2010
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.5"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/popgrid_ar"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
