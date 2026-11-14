@@ -12,15 +12,17 @@ uv run python scripts/descargar_limites.py              # IGN -> data/limites/
 uv run python scripts/construir_censos.py               # INDEC -> provincias.csv, departamentos.csv
 uv run python scripts/construir_salta_historico.py      # DGE Salta -> salta_historico.csv (necesita el anterior)
 uv run python scripts/construir_provincias_historico.py # INDEC Cuadro 7 -> provincias_historico.csv (necesita provincias.csv)
-uv run python scripts/grafico_serie_salta.py            # gráfico de líneas de la serie de Salta
-uv run python scripts/generar_mapas.py salta --modo todo
+uv run python scripts/generar_mapas.py <nivel> --modo todo   # nivel: provincias, salta, zonas:salta, zonas:argentina, departamentos:<prov>
+uv run python scripts/grafico_serie.py <nivel>               # % por región y censo, en paneles chicos
 ```
 
 En esta Mac el `python3` del PATH (`/Library/Frameworks/.../3.8`) falla con "Bad CPU type", y `/usr/bin/python3` es 3.9, que no alcanza (popgrid pide >=3.10). Usar siempre `uv run`.
 
 ## Arquitectura
 
-- `src/popgrid_ar/config.py`: única fuente de rutas, códigos INDEC (`PROVINCIAS`, `DEPARTAMENTOS_SALTA`), departamentos excluidos y etiquetas cortas.
+- `src/popgrid_ar/config.py`: única fuente de rutas, códigos INDEC (`PROVINCIAS`, `DEPARTAMENTOS_SALTA`), departamentos excluidos, `CONTENIDOS` (Lezama y Tolhuin dentro de su departamento de origen en 2001 y 2010) y etiquetas cortas.
+- `niveles.py`: **todo pasa por un `Nivel`** (`nivel("zonas:salta")`). Las claves son `provincias`, `departamentos:<prov>` (`salta` es atajo de `departamentos:66`), `zonas:<prov>` y `zonas:argentina`. `<prov>` acepta el código o el nombre. Un `Nivel` sabe sus regiones actuales (`nombres`), sus ausencias, el título, la unidad, el prefijo de archivos y la fuente. Las zonas tienen `base` (el nivel que agrupan) y `zonas_de` (el CSV en `data/zonas/`).
+- **Zonas:** se agrupan en `censos._agrupar_zonas` (suma censo a censo; una fila compuesta no puede cruzar zonas) y en `mapas._limites_cache` (dissolve de los límites del nivel base). Son categorías analíticas propuestas, no oficiales, y se editan en los CSV.
 - `limites.py`: descarga `ign:departamento` del WFS del IGN (campo `in1` = código INDEC de 5 dígitos, `nam` = nombre). Las provincias se arman con un **dissolve de departamentos antes de simplificar** (si se simplifica antes, quedan huecos).
 - `censos.py`: CSV anchos. `provincias.csv` tiene `codigo,nombre,pob_AAAA...`; `departamentos.csv` (todo el país, 528 filas) agrega la columna `provincia`. El nivel `salta` lee `salta_historico.csv` (1869-2022).
   - **Filas compuestas:** un código como `66126+66056` (Orán + San Martín hasta 1947) representa un departamento que después se dividió. En los años en que tiene valor, sus partes van vacías. `validar` rechaza que una región quede contada dos veces en un mismo censo.

@@ -2,20 +2,22 @@
 
 Las tablas viven en data/censos/ en formato ancho:
 
-    provincias.csv       codigo,nombre,pob_2001,pob_2010,pob_2022          (INDEC)
-    departamentos.csv    codigo,provincia,nombre,pob_2001,pob_2010,pob_2022 (INDEC)
-    salta_historico.csv  codigo,nombre,pob_1869,...,pob_2022               (DGE Salta)
+    provincias.csv            codigo,nombre,pob_2001,pob_2010,pob_2022          (INDEC)
+    provincias_historico.csv  codigo,nombre,pct_1895,...,pct_1991               (INDEC, %)
+    departamentos.csv         codigo,provincia,nombre,pob_2001,pob_2010,pob_2022 (INDEC)
+    salta_historico.csv       codigo,nombre,pob_1869,...,pob_2022               (DGE Salta)
 
 - `codigo` es el código INDEC (2 dígitos para provincias, 5 para departamentos)
-  y se lee siempre como texto para no perder el cero inicial.
-- Cada columna `pob_AAAA` es un censo.
+  y se lee siempre como texto para no perder el cero inicial. En el nivel de zonas,
+  el código es el nombre de la zona en minúsculas ("valle_de_lerma").
+- Cada columna `pob_AAAA` (personas) o `pct_AAAA` (% publicado) es un censo.
 - Una celda vacía significa que esa unidad no existía en ese censo.
 - Una fila con código compuesto ("66126+66056") representa un departamento que
   después se dividió; en los censos en que tiene valor, sus partes van vacías.
 
 Un censo es "disponible" para mapas cuando cada región esperada queda cubierta
 exactamente una vez (directamente o por una fila compuesta), salvo las ausencias
-declaradas en config (p. ej. Los Andes antes de 1914).
+declaradas (p. ej. Los Andes antes de 1914).
 """
 
 from __future__ import annotations
@@ -25,25 +27,35 @@ import re
 import pandas as pd
 
 from . import config
+from .niveles import Nivel, zonas
+from .niveles import nivel as obtener_nivel
 
 ARCHIVO_PROVINCIAS = config.CENSOS / "provincias.csv"
 ARCHIVO_DEPARTAMENTOS = config.CENSOS / "departamentos.csv"
 ARCHIVO_PROVINCIAS_HISTORICO = config.CENSOS / "provincias_historico.csv"
 ARCHIVO_SALTA_HISTORICO = config.CENSOS / "salta_historico.csv"
-ARCHIVOS = {"provincias": ARCHIVO_PROVINCIAS, "salta": ARCHIVO_SALTA_HISTORICO}
-CODIGOS_ESPERADOS = {
-    "provincias": config.PROVINCIAS,
-    "salta": config.DEPARTAMENTOS_SALTA,
-}
-AUSENCIAS = {"provincias": {}, "salta": config.AUSENCIAS_SALTA}
 # pob_AAAA: personas (exacto). pct_AAAA: % del total publicado con un decimal
 # (provincias 1895-1991, INDEC solo publica porcentajes). Si hay ambos, manda pob.
 _PATRON_CENSO = re.compile(r"^(pob|pct)_(\d{4})$")
 
 
+def _nivel(nivel: str | Nivel) -> Nivel:
+    return nivel if isinstance(nivel, Nivel) else obtener_nivel(nivel)
+
+
 def partes(codigo: str) -> list[str]:
     """Códigos actuales que representa una fila ('66126+66056' -> ['66126', '66056'])."""
     return codigo.split(config.SEPARADOR_COMPUESTO)
+
+
+def columnas_censo(df: pd.DataFrame) -> dict[int, str]:
+    """Devuelve {año: columna} para cada columna `pob_AAAA` o `pct_AAAA`."""
+    salida: dict[int, str] = {}
+    for col in df.columns:
+        m = _PATRON_CENSO.match(col)
+        if m and (int(m.group(2)) not in salida or m.group(1) == "pob"):
+            salida[int(m.group(2))] = col
+    return dict(sorted(salida.items()))
 
 
 def columna(df: pd.DataFrame, anio: int) -> str:
@@ -61,25 +73,16 @@ def cobertura(df: pd.DataFrame, anio: int) -> list[str]:
     return [c for codigo in con_dato for c in partes(codigo)]
 
 
-def _faltantes(df: pd.DataFrame, nivel: str, anio: int) -> set[str]:
-    ausentes = {c for c, anios in AUSENCIAS[nivel].items() if anio in anios}
-    return set(CODIGOS_ESPERADOS[nivel]) - set(cobertura(df, anio)) - ausentes
+def _faltantes(df: pd.DataFrame, n: Nivel, anio: int) -> set[str]:
+    ausentes = {c for c, anios in n.ausencias.items() if anio in anios}
+    return set(n.nombres) - set(cobertura(df, anio)) - ausentes
 
 
-def columnas_censo(df: pd.DataFrame) -> dict[int, str]:
-    """Devuelve {año: columna} para cada columna `pob_AAAA` o `pct_AAAA`."""
-    salida: dict[int, str] = {}
-    for col in df.columns:
-        m = _PATRON_CENSO.match(col)
-        if m and (int(m.group(2)) not in salida or m.group(1) == "pob"):
-            salida[int(m.group(2))] = col
-    return dict(sorted(salida.items()))
-
-
-def validar(df: pd.DataFrame, nivel: str) -> None:
+def validar(df: pd.DataFrame, nivel: str | Nivel) -> None:
     """Verifica códigos y valores. Lanza ValueError con todos los problemas."""
+    n = _nivel(nivel)
     problemas = []
-    esperados = set(CODIGOS_ESPERADOS[nivel])
+    esperados = set(n.nombres)
     presentes = list(df["codigo"])
     if len(presentes) != len(set(presentes)):
         problemas.append("hay códigos repetidos")
@@ -103,7 +106,7 @@ def validar(df: pd.DataFrame, nivel: str) -> None:
         if len(cubiertos) != len(set(cubiertos)):
             problemas.append(f"censo {anio}: una región aparece contada dos veces")
     if problemas:
-        raise ValueError(f"{ARCHIVOS[nivel].name}: " + "; ".join(problemas))
+        raise ValueError(f"{n.clave}: " + "; ".join(problemas))
 
 
 def _leer(ruta) -> pd.DataFrame:
@@ -116,8 +119,8 @@ def _leer(ruta) -> pd.DataFrame:
 
 
 def cargar_departamentos(provincia: str | None = None) -> pd.DataFrame:
-    """Tabla de todos los departamentos del país, o de una provincia si se pasa
-    su código INDEC de 2 dígitos (p. ej. '66' para Salta)."""
+    """Tabla de todos los departamentos del país (INDEC, 2001-2022), o de una
+    provincia si se pasa su código INDEC de 2 dígitos (p. ej. '66' para Salta)."""
     df = _leer(ARCHIVO_DEPARTAMENTOS)
     if df["codigo"].duplicated().any():
         raise ValueError(f"{ARCHIVO_DEPARTAMENTOS.name}: hay códigos repetidos")
@@ -128,29 +131,90 @@ def cargar_departamentos(provincia: str | None = None) -> pd.DataFrame:
     return df
 
 
-def cargar_censo(nivel: str) -> pd.DataFrame:
-    """Lee y valida la tabla censal de `nivel` ('provincias' o 'salta')."""
-    if nivel not in ARCHIVOS:
-        raise ValueError(f"Nivel desconocido {nivel!r}; opciones: {config.NIVELES}")
-    df = _leer(ARCHIVOS[nivel])
-    if nivel == "provincias" and ARCHIVO_PROVINCIAS_HISTORICO.exists():
-        historico = _leer(ARCHIVO_PROVINCIAS_HISTORICO).drop(columns="nombre")
-        df = historico.merge(df, on="codigo", how="right", validate="1:1")
-        df = df[["codigo", "nombre", *columnas_censo(df).values()]]
-    validar(df, nivel)
-    df.attrs["nivel"] = nivel
+def _con_contenidos(df: pd.DataFrame) -> pd.DataFrame:
+    """Departamentos creados después de un censo (config.CONTENIDOS): en los censos
+    en que su población está dentro de otro, se agrega una fila compuesta
+    'origen+nuevo' con el valor del origen, y el origen queda vacío esos años."""
+    df = df.copy()
+    nuevas = []
+    for nuevo, (origen, anios) in config.CONTENIDOS.items():
+        if not {nuevo, origen} <= set(df["codigo"]):
+            continue
+        fila_origen = df.index[df["codigo"] == origen][0]
+        nombre_nuevo = df.loc[df["codigo"] == nuevo, "nombre"].iloc[0]
+        compuesta = {
+            "codigo": f"{origen}{config.SEPARADOR_COMPUESTO}{nuevo}",
+            "nombre": f"{df.at[fila_origen, 'nombre']} (incl. {nombre_nuevo})",
+        }
+        for anio, col in columnas_censo(df).items():
+            if anio in anios:
+                compuesta[col] = df.at[fila_origen, col]
+                df.at[fila_origen, col] = pd.NA
+            else:
+                compuesta[col] = pd.NA
+        nuevas.append(compuesta)
+    if nuevas:
+        df = pd.concat([df, pd.DataFrame(nuevas).astype(df.dtypes.to_dict())], ignore_index=True)
     return df
 
 
-def censos_disponibles(df: pd.DataFrame, nivel: str | None = None) -> list[int]:
+def _agrupar_zonas(deptos: pd.DataFrame, n: Nivel) -> pd.DataFrame:
+    """Suma las regiones del nivel base (departamentos o provincias) por zona."""
+    tabla = zonas(n.zonas_de)
+    zona_de = dict(zip(tabla["codigo"], tabla["zona"], strict=True))
+    asignadas = []
+    for codigo in deptos["codigo"]:
+        zonas_fila = {zona_de[p] for p in partes(codigo)}
+        if len(zonas_fila) != 1:
+            raise ValueError(
+                f"{codigo} junta regiones de zonas distintas ({sorted(zonas_fila)}): "
+                "no se puede repartir su población"
+            )
+        asignadas.append(zonas_fila.pop())
+    cols = list(columnas_censo(deptos).values())
+    sumas = deptos.assign(zona=asignadas).groupby("zona", sort=False)[cols].sum(min_count=1)
+    orden = list(n.nombres.values())
+    sumas = sumas.reindex(orden)
+    salida = pd.DataFrame({"codigo": list(n.nombres), "nombre": orden})
+    for col in cols:
+        salida[col] = sumas[col].to_numpy()
+        salida[col] = salida[col].astype(deptos[col].dtype)
+    return salida
+
+
+def cargar_censo(nivel: str | Nivel) -> pd.DataFrame:
+    """Lee y valida la tabla censal de un nivel ('provincias', 'salta',
+    'departamentos:<provincia>', 'zonas:<provincia>')."""
+    n = _nivel(nivel)
+    if n.tipo == "provincias":
+        df = _leer(ARCHIVO_PROVINCIAS)
+        if ARCHIVO_PROVINCIAS_HISTORICO.exists():
+            historico = _leer(ARCHIVO_PROVINCIAS_HISTORICO).drop(columns="nombre")
+            df = historico.merge(df, on="codigo", how="right", validate="1:1")
+            df = df[["codigo", "nombre", *columnas_censo(df).values()]]
+    elif n.tipo == "departamentos":
+        if n.provincia == config.CODIGO_SALTA:
+            df = _leer(ARCHIVO_SALTA_HISTORICO)
+        else:
+            df = cargar_departamentos(n.provincia).drop(columns="provincia")
+            df = df[df["codigo"].isin(n.nombres)].reset_index(drop=True)
+            df = _con_contenidos(df)
+    else:
+        df = _agrupar_zonas(cargar_censo(n.base), n)
+    validar(df, n)
+    df.attrs["nivel"] = n.clave
+    return df
+
+
+def censos_disponibles(df: pd.DataFrame, nivel: str | Nivel | None = None) -> list[int]:
     """Años de censo en que todas las regiones esperadas tienen dato (salvo las
-    ausencias declaradas). Sin `nivel` (o con un nivel desconocido), exige que la
-    columna esté completa."""
-    nivel = nivel or df.attrs.get("nivel")
+    ausencias declaradas). Sin nivel conocido, exige que la columna esté completa."""
+    clave = nivel or df.attrs.get("nivel")
     anios = columnas_censo(df)
-    if nivel not in CODIGOS_ESPERADOS:
+    if clave is None:
         return [a for a, col in anios.items() if df[col].notna().all()]
-    return [a for a in anios if not _faltantes(df, nivel, a)]
+    n = _nivel(clave)
+    return [a for a in anios if not _faltantes(df, n, a)]
 
 
 def tabla_participacion(df: pd.DataFrame) -> pd.DataFrame:

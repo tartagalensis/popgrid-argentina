@@ -9,6 +9,7 @@ DATOS = RAIZ / "data"
 CRUDOS = DATOS / "raw"
 LIMITES = DATOS / "limites"
 CENSOS = DATOS / "censos"
+ZONAS = DATOS / "zonas"  # agrupaciones de departamentos: <provincia>.csv (codigo,departamento,zona)
 SALIDA = RAIZ / "output"
 
 # Servicio WFS del Instituto Geográfico Nacional. La capa `ign:departamento`
@@ -25,6 +26,13 @@ TOLERANCIA_SIMPLIFICACION_M = 250
 DEPARTAMENTOS_EXCLUIDOS = {
     "94021": "Islas del Atlántico Sur",
     "94028": "Antártida Argentina",
+}
+
+# Departamentos creados después de 2010: en los censos indicados, su población
+# está contada dentro del departamento de origen. nuevo -> (origen, censos).
+CONTENIDOS = {
+    "06466": ("06218", (2001, 2010)),  # Lezama, dentro de Chascomús
+    "94011": ("94008", (2001, 2010)),  # Tolhuin, dentro de Río Grande
 }
 
 # Códigos INDEC de provincia -> nombre corto para los mapas.
@@ -105,4 +113,5 @@ ETIQUETAS = {
     "Santiago del Estero": "Sgo. del Estero",
 }
 
-NIVELES = ("provincias", "salta")
+# Ejemplos de niveles (ver popgrid_ar.niveles para la sintaxis completa).
+NIVELES = ("provincias", "salta", "zonas:salta")

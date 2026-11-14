@@ -4,12 +4,17 @@
 
 Este proyecto usa [popgrid](https://github.com/databites-tech/popgrid) para dibujar *block cartograms*: mapas en los que **cada bloque representa la misma porción del total**. Con 1.000 bloques, cada uno equivale al 0,1% de la superficie o al 0,1% de la población. El mismo territorio, con los mismos colores, se dibuja de dos formas. Donde la tierra y la gente no coinciden aparece la historia.
 
-Dos niveles de análisis:
+Niveles de análisis:
 
 | Nivel | Censos | Regiones | Pregunta |
 |---|---|---|---|
 | `provincias` | 10 censos, de 1895 a 2022 | 24 jurisdicciones | ¿Qué provincias ganaron o perdieron peso en la población del país? |
-| `salta` | los 11 censos nacionales, de 1869 a 2022 | 23 departamentos | ¿Cuánto se concentra Salta en Capital? ¿Qué pasó con el norte (Orán, San Martín) y con los Valles? |
+| `zonas:argentina` | 1895 a 2022 | 6 regiones: CABA, Pampeana, NOA, NEA, Cuyo, Patagonia | ¿Cómo se redistribuyó el país entre regiones? |
+| `salta` (= `departamentos:66`) | los 11 censos nacionales, de 1869 a 2022 | 23 departamentos | ¿Cuánto se concentra Salta en Capital? ¿Qué pasó con el norte y con los Valles? |
+| `zonas:salta` | 1869 a 2022 | 7 zonas: Capital, Valle de Lerma, Valles Calchaquíes, Puna, Norte andino, Noreste, Centro-sur | Lo mismo, con zonas como categoría analítica |
+| `departamentos:<provincia>` | 2001, 2010 y 2022 | departamentos, partidos o comunas de cualquier provincia | Por ejemplo `departamentos:jujuy` o `departamentos:06` |
+
+Las zonas son agrupaciones analíticas definidas en CSV editables ([`data/zonas/`](data/zonas/README.md)), no divisiones oficiales.
 
 Como el total cambia de un censo a otro, los mapas de distintos años muestran el **peso relativo** de cada región. Un departamento puede haber crecido en habitantes y, aun así, achicarse en el mapa si creció menos que el resto.
 
@@ -17,21 +22,25 @@ Como el total cambia de un censo a otro, los mapas de distintos años muestran e
   <img src="docs/img/salta_comparacion.png" width="100%" alt="Salta por superficie y por población en los 11 censos nacionales, de 1869 a 2022">
 </p>
 
-En 1869, Capital tenía el 19% de la población salteña y los Valles Calchaquíes (Cachi, Molinos, San Carlos, La Poma y Cafayate) el 23%. Hoy Capital tiene el 43,5% y los Valles el 2,9%. El norte cuenta otra historia: Orán y San Martín pasaron del 5% en 1869 al 21% en 1947 y al 27% en 1960, con el auge del azúcar y el petróleo, y desde entonces rondan el 24%. En los últimos censos, Cerrillos (del 2,4% en 2001 al 3,9% en 2022) y La Caldera, que más que duplicó sus habitantes, son las zonas que más crecen alrededor de la capital.
+En 1869, Capital tenía el 19% de la población salteña y los Valles Calchaquíes (Cachi, Molinos, San Carlos y Cafayate) el 19,5%. Hoy Capital tiene el 43,5% y los Valles el 2,8%. El norte cuenta otra historia: Orán y San Martín pasaron del 5% en 1869 al 21% en 1947 y al 27% en 1960, con el auge del azúcar y el petróleo, y desde entonces rondan el 24%. En los últimos censos, Cerrillos (del 2,4% en 2001 al 3,9% en 2022) y La Caldera, que más que duplicó sus habitantes, son las zonas que más crecen alrededor de la capital.
 
 Hasta 1947, Orán y San Martín eran un solo departamento, y así se dibujan. Los Andes (la Puna) pasó a Salta recién en 1943, por eso no aparece en 1869 ni en 1895.
 
 <p align="center">
-  <img src="docs/img/salta_serie.png" width="100%" alt="Gráfico de líneas: porcentaje de la población de Salta en Capital, Orán y San Martín, Valle de Lerma, Valles Calchaquíes y resto de la provincia, 1869-2022">
+  <img src="docs/img/salta_zonas_serie.png" width="100%" alt="Paneles con el porcentaje de la población de Salta por zona, 1869-2022">
 </p>
 
-La misma serie, en líneas (`uv run python scripts/grafico_serie_salta.py`). Los valores están en `output/salta_serie_participacion.csv`.
+La serie por zonas (`uv run python scripts/grafico_serie.py zonas:salta`). Cada panel tiene su propia escala, para que se vea la dinámica de las zonas chicas. Los valores quedan en `output/salta_zonas_serie.csv`.
 
 <p align="center">
   <img src="docs/img/provincias_comparacion.png" width="100%" alt="Argentina por superficie y por población en los censos de 1895 a 2022">
 </p>
 
 En 1895, CABA y Buenos Aires tenían el 39% del país. Hoy suman el 45%, pero repartido al revés: CABA pasó de casi el 20% (1914) al 7%, y la provincia de Buenos Aires, del 23% al 38%. El noroeste perdió peso entre 1895 y 1914 (Salta pasó del 2,9% al 1,8%) y lo fue recuperando de a poco: en 2022 Salta está en el 3,1%. Chaco, Formosa y la Patagonia casi no aparecen en 1895 (entre todas suman menos del 2%) y crecen a medida que se pueblan los ex territorios nacionales.
+
+<p align="center">
+  <img src="docs/img/argentina_zonas_serie.png" width="100%" alt="Paneles con el porcentaje de la población argentina por región, 1895-2022">
+</p>
 
 Los mapas de 1895 a 1991 usan el porcentaje por provincia que publica el INDEC con un decimal (Censo 2010, Tomo 1, Cuadro 7). Con 1.000 bloques, una décima es un bloque, así que alcanza para el mapa. Desde 2001 se usan las cantidades exactas de personas.
 
@@ -115,6 +124,15 @@ uv run python scripts/generar_mapas.py salta --modo tabla
 
 # Todo junto
 uv run python scripts/generar_mapas.py salta --modo todo
+
+# Zonas y departamentos de otras provincias
+uv run python scripts/generar_mapas.py zonas:salta --modo todo
+uv run python scripts/generar_mapas.py zonas:argentina --modo comparar
+uv run python scripts/generar_mapas.py departamentos:jujuy --modo todo
+
+# Serie (% por región y censo) en paneles chicos
+uv run python scripts/grafico_serie.py zonas:salta
+uv run python scripts/grafico_serie.py zonas:argentina --columnas 3
 ```
 
 Opciones: `--censos 2010 2022` para elegir años, `--n 2000` para usar más bloques (más detalle para departamentos chicos) y `--out carpeta/`. Todo se guarda en `output/`.
@@ -137,6 +155,7 @@ tabla_participacion(cargar_censo("salta"))
 ```
 ├── src/popgrid_ar/
 │   ├── config.py      # rutas, códigos INDEC, exclusiones, etiquetas cortas
+│   ├── niveles.py     # niveles de análisis: provincias, departamentos:<prov>, zonas:<...>
 │   ├── limites.py     # descarga del IGN, dissolve a provincias, simplificación
 │   ├── censos.py      # lectura, validación y tabla de participación
 │   └── mapas.py       # mapas de superficie, población y comparación con popgrid
@@ -145,15 +164,23 @@ tabla_participacion(cargar_censo("salta"))
 │   ├── construir_censos.py
 │   ├── construir_salta_historico.py
 │   ├── construir_provincias_historico.py
-│   ├── grafico_serie_salta.py
+│   ├── grafico_serie.py
 │   └── generar_mapas.py
 ├── data/
-│   ├── censos/        # CSV de población 2001/2010/2022 + FUENTES.md (versionado)
+│   ├── censos/        # CSV de población por censo + FUENTES.md (versionado)
+│   ├── zonas/         # agrupaciones analíticas editables (salta.csv, argentina.csv)
 │   ├── limites/       # GeoJSON simplificados (versionado, generado por script)
 │   └── raw/           # descargas crudas del IGN y del INDEC (ignorado por git)
 ├── tests/
 └── output/            # mapas generados (ignorado por git)
 ```
+
+---
+
+## Pendientes
+
+- **Municipios.** No son una unidad de los censos: habría que componerlos a partir de radios censales (cartografía y datos por radio del INDEC) y definir qué radios forman cada municipio.
+- **Series económicas** (producto, exportaciones, empleo) con la misma lógica de bloques: cada bloque como una porción del total de la variable, no de la población.
 
 ---
 

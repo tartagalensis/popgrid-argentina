@@ -1,0 +1,25 @@
+codigo,provincia,zona
+02,CABA,CABA
+06,Buenos Aires,Pampeana
+14,Córdoba,Pampeana
+82,Santa Fe,Pampeana
+30,Entre Ríos,Pampeana
+42,La Pampa,Pampeana
+38,Jujuy,NOA
+66,Salta,NOA
+90,Tucumán,NOA
+10,Catamarca,NOA
+86,Santiago del Estero,NOA
+46,La Rioja,NOA
+54,Misiones,NEA
+18,Corrientes,NEA
+22,Chaco,NEA
+34,Formosa,NEA
+50,Mendoza,Cuyo
+70,San Juan,Cuyo
+74,San Luis,Cuyo
+58,Neuquén,Patagonia
+62,Río Negro,Patagonia
+26,Chubut,Patagonia
+78,Santa Cruz,Patagonia
+94,Tierra del Fuego,Patagonia
