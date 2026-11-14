@@ -29,6 +29,8 @@ import pandas as pd
 from . import config
 from .niveles import Nivel, zonas
 from .niveles import nivel as obtener_nivel
+from .variables import Variable
+from .variables import variable as obtener_variable
 
 ARCHIVO_PROVINCIAS = config.CENSOS / "provincias.csv"
 ARCHIVO_DEPARTAMENTOS = config.CENSOS / "departamentos.csv"
@@ -36,7 +38,7 @@ ARCHIVO_PROVINCIAS_HISTORICO = config.CENSOS / "provincias_historico.csv"
 ARCHIVO_SALTA_HISTORICO = config.CENSOS / "salta_historico.csv"
 # pob_AAAA: personas (exacto). pct_AAAA: % del total publicado con un decimal
 # (provincias 1895-1991, INDEC solo publica porcentajes). Si hay ambos, manda pob.
-_PATRON_CENSO = re.compile(r"^(pob|pct)_(\d{4})$")
+_PATRON_CENSO = re.compile(r"^(pob|pct|val)_(\d{4})$")
 
 
 def _nivel(nivel: str | Nivel) -> Nivel:
@@ -53,7 +55,7 @@ def columnas_censo(df: pd.DataFrame) -> dict[int, str]:
     salida: dict[int, str] = {}
     for col in df.columns:
         m = _PATRON_CENSO.match(col)
-        if m and (int(m.group(2)) not in salida or m.group(1) == "pob"):
+        if m and (int(m.group(2)) not in salida or m.group(1) != "pct"):
             salida[int(m.group(2))] = col
     return dict(sorted(salida.items()))
 
@@ -100,6 +102,10 @@ def validar(df: pd.DataFrame, nivel: str | Nivel) -> None:
             # debajo de 100: en 1895 hay un 2,2% sin jurisdicción determinada.
             if (valores < 0).any() or not 97 <= valores.sum() <= 101:
                 problemas.append(f"censo {anio}: porcentajes fuera de rango")
+        elif col.startswith("val_"):
+            # Montos económicos: 0 es válido (una región puede no exportar).
+            if (valores < 0).any():
+                problemas.append(f"{anio}: hay valores negativos")
         elif (valores <= 0).any():
             problemas.append(f"censo {anio}: hay valores <= 0")
         cubiertos = cobertura(df, anio)
@@ -113,7 +119,7 @@ def _leer(ruta) -> pd.DataFrame:
     df = pd.read_csv(ruta, dtype={"codigo": str})
     for col in df.columns:
         if _PATRON_CENSO.match(col):
-            tipo = "Float64" if es_porcentaje(col) else "Int64"
+            tipo = "Int64" if col.startswith("pob_") else "Float64"
             df[col] = pd.to_numeric(df[col], errors="raise").astype(tipo)
     return df
 
@@ -182,11 +188,29 @@ def _agrupar_zonas(deptos: pd.DataFrame, n: Nivel) -> pd.DataFrame:
     return salida
 
 
-def cargar_censo(nivel: str | Nivel) -> pd.DataFrame:
-    """Lee y valida la tabla censal de un nivel ('provincias', 'salta',
-    'departamentos:<provincia>', 'zonas:<provincia>')."""
+def _cargar_economia(n: Nivel, var: Variable) -> pd.DataFrame:
+    """Variables económicas: se leen por provincia o por departamento y se
+    agrupan en zonas igual que la población."""
+    if n.tipo == "zonas":
+        return _agrupar_zonas(cargar_censo(n.base, var), n)
+    archivo = var.archivo_provincias if n.tipo == "provincias" else var.archivo_departamentos
+    if archivo is None:
+        raise ValueError(f"{var.titulo} no está disponible por {n.tipo}")
+    df = _leer(config.ECONOMIA / archivo)
+    return df[df["codigo"].isin(n.nombres)].reset_index(drop=True)[
+        ["codigo", "nombre", *columnas_censo(df).values()]
+    ]
+
+
+def cargar_censo(nivel: str | Nivel, variable: str | Variable = "poblacion") -> pd.DataFrame:
+    """Lee y valida la tabla de un nivel ('provincias', 'salta',
+    'departamentos:<provincia>', 'zonas:<provincia>') para una variable
+    ('poblacion', 'exportaciones', 'pbi')."""
     n = _nivel(nivel)
-    if n.tipo == "provincias":
+    var = obtener_variable(variable)
+    if var.clave != "poblacion":
+        df = _cargar_economia(n, var)
+    elif n.tipo == "provincias":
         df = _leer(ARCHIVO_PROVINCIAS)
         if ARCHIVO_PROVINCIAS_HISTORICO.exists():
             historico = _leer(ARCHIVO_PROVINCIAS_HISTORICO).drop(columns="nombre")
@@ -203,6 +227,7 @@ def cargar_censo(nivel: str | Nivel) -> pd.DataFrame:
         df = _agrupar_zonas(cargar_censo(n.base), n)
     validar(df, n)
     df.attrs["nivel"] = n.clave
+    df.attrs["variable"] = var.clave
     return df
 
 

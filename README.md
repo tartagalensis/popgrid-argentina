@@ -16,6 +16,23 @@ Niveles de análisis:
 
 Las zonas son agrupaciones analíticas definidas en CSV editables ([`data/zonas/`](data/zonas/README.md)), no divisiones oficiales.
 
+Además de la población, se puede mapear cualquier variable que se sume entre regiones. Hoy están:
+
+| Variable | Años | Niveles | Fuente |
+|---|---|---|---|
+| `poblacion` | censos | todos | INDEC (y DGE Salta para la serie histórica) |
+| `exportaciones` | 1993 a 2025, anual | `provincias`, `zonas:argentina` | INDEC, Origen provincial de las exportaciones |
+
+<p align="center">
+  <img src="docs/img/provincias_variables.png" width="100%" alt="Argentina por superficie, población y exportaciones en 2022">
+</p>
+
+El mismo país visto de tres maneras en 2022. CABA tiene el 6,8% de la población y solo el 0,4% de las exportaciones de bienes. Santa Fe pasa del 7,7% de la población al 22,1% de las exportaciones, y Córdoba del 8,4% al 14,7%. La provincia de Buenos Aires pesa casi lo mismo en población y en exportaciones (38%). Salta tiene el 3,1% de la gente y el 1,5% de las exportaciones.
+
+<p align="center">
+  <img src="docs/img/argentina_zonas_exportaciones_serie.png" width="100%" alt="Paneles con el porcentaje de las exportaciones por región, 1993-2025">
+</p>
+
 Como el total cambia de un censo a otro, los mapas de distintos años muestran el **peso relativo** de cada región. Un departamento puede haber crecido en habitantes y, aun así, achicarse en el mapa si creció menos que el resto.
 
 <p align="center">
@@ -130,6 +147,11 @@ uv run python scripts/generar_mapas.py zonas:salta --modo todo
 uv run python scripts/generar_mapas.py zonas:argentina --modo comparar
 uv run python scripts/generar_mapas.py departamentos:jujuy --modo todo
 
+# Exportaciones: mapas por año, serie y comparación con población
+uv run python scripts/generar_mapas.py provincias --variable exportaciones --modo comparar
+uv run python scripts/grafico_serie.py zonas:argentina --variable exportaciones --columnas 3
+uv run python scripts/generar_mapas.py provincias --modo variables --anio 2022
+
 # Serie (% por región y censo) en paneles chicos
 uv run python scripts/grafico_serie.py zonas:salta
 uv run python scripts/grafico_serie.py zonas:argentina --columnas 3
@@ -156,6 +178,7 @@ tabla_participacion(cargar_censo("salta"))
 ├── src/popgrid_ar/
 │   ├── config.py      # rutas, códigos INDEC, exclusiones, etiquetas cortas
 │   ├── niveles.py     # niveles de análisis: provincias, departamentos:<prov>, zonas:<...>
+│   ├── variables.py   # variables mapeables: poblacion, exportaciones
 │   ├── limites.py     # descarga del IGN, dissolve a provincias, simplificación
 │   ├── censos.py      # lectura, validación y tabla de participación
 │   └── mapas.py       # mapas de superficie, población y comparación con popgrid
@@ -164,10 +187,12 @@ tabla_participacion(cargar_censo("salta"))
 │   ├── construir_censos.py
 │   ├── construir_salta_historico.py
 │   ├── construir_provincias_historico.py
+│   ├── construir_exportaciones.py
 │   ├── grafico_serie.py
 │   └── generar_mapas.py
 ├── data/
 │   ├── censos/        # CSV de población por censo + FUENTES.md (versionado)
+│   ├── economia/      # exportaciones por provincia + FUENTES.md (versionado)
 │   ├── zonas/         # agrupaciones analíticas editables (salta.csv, argentina.csv)
 │   ├── limites/       # GeoJSON simplificados (versionado, generado por script)
 │   └── raw/           # descargas crudas del IGN y del INDEC (ignorado por git)
@@ -180,7 +205,9 @@ tabla_participacion(cargar_censo("salta"))
 ## Pendientes
 
 - **Municipios.** No son una unidad de los censos: habría que componerlos a partir de radios censales (cartografía y datos por radio del INDEC) y definir qué radios forman cada municipio.
-- **Series económicas** (producto, exportaciones, empleo) con la misma lógica de bloques: cada bloque como una porción del total de la variable, no de la población.
+- **PBI por provincia.** La fuente adecuada es el VAB provincial de CEPAL y CEP XXI, pero su sitio bloquea las descargas automatizadas: hay que bajar el archivo a mano. La grilla de PBI de Kummu et al. se probó y se descartó por un quiebre en la serie de Córdoba. Ver [`data/economia/FUENTES.md`](data/economia/FUENTES.md).
+- **PBI por departamento.** Una opción es repartir el VAB provincial de CEPAL entre departamentos según la grilla de Kummu (usada solo para la distribución dentro de cada provincia), con la grilla de 30" para que los departamentos chicos no queden mal medidos.
+- **Empleo registrado** por departamento (CEP XXI) como aproximación a la actividad económica local.
 
 ---
 
@@ -188,6 +215,7 @@ tabla_participacion(cargar_censo("salta"))
 
 - **Límites:** Instituto Geográfico Nacional (IGN), capa `departamento` del [servicio WFS](https://wms.ign.gob.ar/geoserver/ows). Incluye el código INDEC de cada departamento, que se usa para unir con los censos.
 - **Población:** INDEC, Censos Nacionales de Población, Hogares y Viviendas 2001, 2010 y 2022. Para provincias de 1895 a 1991, INDEC, Censo 2010, Tomo 1, Cuadro 7 (distribución porcentual). Para la serie de Salta desde 1869, la [Dirección General de Estadísticas de Salta](https://estadisticas.salta.gov.ar/) (Anuario 2025, cuadro 2.1.1, sobre la base de los censos nacionales del INDEC). El detalle de cada cuadro está en [`data/censos/FUENTES.md`](data/censos/FUENTES.md).
+- **Exportaciones:** INDEC, Origen provincial de las exportaciones (OPEX), 1993-2025. Ver [`data/economia/FUENTES.md`](data/economia/FUENTES.md).
 
 ## Créditos
 

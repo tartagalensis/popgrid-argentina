@@ -17,6 +17,7 @@ las regiones actuales, así cada región conserva su color en todos los censos.
 from __future__ import annotations
 
 import math
+import re
 from functools import cache
 
 import geopandas as gpd
@@ -30,6 +31,8 @@ from .censos import cargar_censo, censos_disponibles, columna, es_porcentaje, pa
 from .limites import cargar_limites
 from .niveles import Nivel, slug, zonas
 from .niveles import nivel as obtener_nivel
+from .variables import Variable
+from .variables import variable as obtener_variable
 
 
 def _n(nivel: str | Nivel) -> Nivel:
@@ -112,17 +115,30 @@ def _lista(nombres: list[str]) -> str:
     return " y ".join(", ".join(nombres).rsplit(", ", 1))
 
 
-def nota_censo(censo: pd.DataFrame, anio: int, nivel: str | Nivel) -> str:
-    """Aclaraciones para un censo: datos en %, regiones unidas, regiones que no
-    integraban el territorio y regiones con menos de medio bloque."""
+def _fuente(niv: Nivel, var: Variable) -> str:
+    if var.clave == "poblacion":
+        return niv.fuente
+    return f"Límites: IGN · {var.fuente} · popgrid"
+
+
+def nota_censo(
+    censo: pd.DataFrame, anio: int, nivel: str | Nivel, variable: str | Variable = "poblacion"
+) -> str:
+    """Aclaraciones para un año: datos en %, valores sin provincia, datos
+    provisorios, regiones unidas, regiones que no integraban el territorio y
+    regiones con menos de medio bloque."""
     niv = _n(nivel)
+    var = obtener_variable(variable)
     notas = []
     col = columna(censo, anio)
     valores = censo.set_index("codigo")[col]
     if es_porcentaje(col):
         notas.append("% publicado por el INDEC con un decimal")
-        if sin_asignar := config.SIN_JURISDICCION_PCT.get(anio):
-            notas.append(f"{sin_asignar:.1f}% sin provincia asignada".replace(".", ","))
+    base_provincias = niv.tipo == "provincias" or (niv.tipo == "zonas" and niv.base == "provincias")
+    if base_provincias and (sin_asignar := var.sin_provincia_pct(anio)) and sin_asignar >= 0.05:
+        notas.append(f"{sin_asignar:.1f}% {var.de} sin provincia asignada".replace(".", ","))
+    if anio in var.provisorios:
+        notas.append("datos provisorios")
     con_dato = valores.dropna()
     compuestos = [c for c in con_dato.index if config.SEPARADOR_COMPUESTO in c]
     nombres_fila = censo.set_index("codigo")["nombre"]
@@ -134,7 +150,7 @@ def nota_censo(censo: pd.DataFrame, anio: int, nivel: str | Nivel) -> str:
         notas.append(f"sin {nombres} (aún no integraba{plural} {niv.territorio})")
     if niv.tipo == "zonas":
         # Una zona puede estar, pero incompleta (Puna sin Los Andes en 1869).
-        base = cargar_censo(niv.base)
+        base = cargar_censo(niv.base, var)
         col_base = columna(base, anio)
         en_base = {p for c in base.loc[base[col_base].notna(), "codigo"] for p in partes(c)}
         nombres_base = obtener_nivel(niv.base).nombres
@@ -163,21 +179,23 @@ def grilla_superficie(nivel: str | Nivel, n: int = 1000) -> AreaGrid:
 
 
 def _rango_censos(anios: list[int], todos: list[int]) -> str:
-    """'1869 a 1947' si son censos consecutivos de la serie; si no, '1869, 1914'."""
+    """'1869 a 1947' si son años consecutivos de la serie; si no, '1869, 1914'."""
     i = todos.index(anios[0])
     if len(anios) > 2 and todos[i : i + len(anios)] == anios:
         return f"{anios[0]} a {anios[-1]}"
     return " y ".join(", ".join(map(str, anios)).rsplit(", ", 1))
 
 
-def grilla_poblacion(
-    nivel: str | Nivel, anio: int, n: int = 1000
+def grilla_variable(
+    nivel: str | Nivel, anio: int, n: int = 1000, variable: str | Variable = "poblacion"
 ) -> tuple[PopGrid, gpd.GeoDataFrame]:
+    """Grilla de bloques de una variable en un año (o censo)."""
     niv = _n(nivel)
-    censo = cargar_censo(niv)
-    if anio not in censos_disponibles(censo):
-        raise ValueError(f"El censo {anio} no está completo para '{niv.clave}'.")
-    regiones = regiones_censo(_limites(niv), censo, anio)
+    var = obtener_variable(variable)
+    datos = cargar_censo(niv, var)
+    if anio not in censos_disponibles(datos):
+        raise ValueError(f"{var.titulo} {anio} no está completo para '{niv.clave}'.")
+    regiones = regiones_censo(_limites(niv), datos, anio)
     colores = _colores(niv, n)
     grilla = PopGrid.from_geodataframe(
         regiones,
@@ -187,6 +205,12 @@ def grilla_poblacion(
         color_map={r: colores[r] for r in regiones["nombre"] if r in colores},
     )
     return grilla, regiones
+
+
+def grilla_poblacion(
+    nivel: str | Nivel, anio: int, n: int = 1000
+) -> tuple[PopGrid, gpd.GeoDataFrame]:
+    return grilla_variable(nivel, anio, n, "poblacion")
 
 
 def mapa_superficie(nivel: str | Nivel, n: int = 1000) -> Figure:
@@ -199,16 +223,87 @@ def mapa_superficie(nivel: str | Nivel, n: int = 1000) -> Figure:
     )
 
 
-def mapa_poblacion(nivel: str | Nivel, anio: int, n: int = 1000) -> Figure:
+def mapa_variable(
+    nivel: str | Nivel, anio: int, n: int = 1000, variable: str | Variable = "poblacion"
+) -> Figure:
     niv = _n(nivel)
-    grilla, regiones = grilla_poblacion(niv, anio, n)
-    nota = nota_censo(cargar_censo(niv), anio, niv)
+    var = obtener_variable(variable)
+    grilla, regiones = grilla_variable(niv, anio, n, var)
+    nota = nota_censo(cargar_censo(niv, var), anio, niv, var)
+    fuente = _fuente(niv, var)
     return grilla.plot(
-        title=f"Población de {niv.titulo} · Censo {anio}",
-        subtitle=f"Cada bloque = {_pct(n)}% de la población {niv.unidad}",
-        data_source=f"{nota[0].upper()}{nota[1:]} · {niv.fuente}" if nota else niv.fuente,
+        title=f"{var.titulo} de {niv.titulo} · {var.etiqueta(anio)}",
+        subtitle=f"Cada bloque = {_pct(n)}% {var.de} {niv.unidad}",
+        data_source=f"{nota[0].upper()}{nota[1:]} · {fuente}" if nota else fuente,
         labels=_etiquetas(regiones),
     )
+
+
+def mapa_poblacion(nivel: str | Nivel, anio: int, n: int = 1000) -> Figure:
+    return mapa_variable(nivel, anio, n, "poblacion")
+
+
+def _agrupar_notas(anios_por_nota: dict[str, list[int]], todos: list[int]) -> list[str]:
+    """Une notas que solo cambian en el porcentaje ('4,3% de las exportaciones sin
+    provincia asignada' en cada año) en una sola línea:
+    '% de las exportaciones sin provincia asignada: 1993 4,3%, 1995 3,9%, ...'.
+    Con más de 4 años, informa el rango: 'entre 1,5% y 6,2% según el año'."""
+    salida, por_sufijo = [], {}
+    for nota, anios in anios_por_nota.items():
+        m = re.fullmatch(r"([\d,]+)% (.+)", nota)
+        if m:
+            valor = float(m.group(1).replace(",", "."))
+            por_sufijo.setdefault(m.group(2), []).extend((a, valor) for a in anios)
+        else:
+            salida.append(f"{_rango_censos(anios, todos)}: {nota}")
+    for sufijo, pares in por_sufijo.items():
+        pares.sort()
+        if len(pares) > 4:
+            bajo, alto = min(v for _, v in pares), max(v for _, v in pares)
+            texto = (
+                f"entre {bajo:.1f}% y {alto:.1f}% según el año ({pares[0][0]}-{pares[-1][0]})"
+            ).replace(".", ",")
+        else:
+            texto = ", ".join(f"{a} {v:.1f}%".replace(".", ",") for a, v in pares)
+        salida.insert(0, f"% {sufijo}: {texto}")
+    return salida
+
+
+def _figura_paneles(
+    niv: Nivel,
+    paneles: list[tuple[str, AreaGrid | PopGrid, dict[str, str]]],
+    titulo: str,
+    pie: list[str],
+    columnas: int,
+) -> Figure:
+    """Grilla de paneles de bloques con título y pie."""
+    # Alto de cada panel según la proporción real del territorio (Argentina es
+    # alta y angosta, Salta más ancha), para no dejar franjas vacías.
+    xmin, ymin, xmax, ymax = _limites(niv).to_crs(config.CRS_METRICO).total_bounds
+    ncols = min(columnas, len(paneles))
+    nfilas = math.ceil(len(paneles) / ncols)
+    ancho_panel = 4.5
+    alto_panel = ancho_panel * min(max((ymax - ymin) / (xmax - xmin), 0.6), 2.2)
+    alto_pie = 0.25 + 0.22 * len(pie)
+    alto = alto_panel * nfilas + 0.95 + alto_pie
+    fig, ejes = plt.subplots(nfilas, ncols, figsize=(ancho_panel * ncols, alto), squeeze=False)
+    fig.subplots_adjust(
+        left=0.01,
+        right=0.99,
+        top=1 - 0.95 / alto,
+        bottom=alto_pie / alto,
+        wspace=0.04,
+        hspace=0.12,
+    )
+    ejes = list(ejes.flat)
+    for ax, (titulo_panel, grilla, etiquetas) in zip(ejes, paneles, strict=False):
+        grilla.draw(ax, background_style="none", labels=etiquetas)
+        ax.set_title(titulo_panel, fontsize=14, fontweight="bold")
+    for ax in ejes[len(paneles) :]:
+        ax.set_axis_off()
+    fig.suptitle(titulo, fontsize=18, fontweight="bold", y=1 - 0.2 / alto)
+    fig.text(0.5, 0.12 / alto, "\n".join(pie), ha="center", va="bottom", fontsize=9)
+    return fig
 
 
 def comparar_censos(
@@ -217,51 +312,60 @@ def comparar_censos(
     n: int = 1000,
     incluir_superficie: bool = True,
     columnas: int = 4,
+    variable: str | Variable = "poblacion",
 ) -> Figure:
-    """Grilla de mapas: superficie (opcional) + un mapa por censo."""
+    """Grilla de mapas: superficie (opcional) + un mapa por año (o censo)."""
     niv = _n(nivel)
-    censo = cargar_censo(niv)
-    censos = censos or censos_disponibles(censo)
-    if not censos:
-        raise ValueError("No hay ningún censo completo cargado en data/censos/.")
+    var = obtener_variable(variable)
+    datos = cargar_censo(niv, var)
+    anios = censos or var.anios_por_defecto(censos_disponibles(datos))
+    if not anios:
+        raise ValueError("No hay ningún año completo cargado.")
 
     paneles: list[tuple[str, AreaGrid | PopGrid, dict[str, str]]] = []
     if incluir_superficie:
         paneles.append(("Superficie", grilla_superficie(niv, n), _etiquetas(_limites(niv))))
     anios_por_nota: dict[str, list[int]] = {}
-    for anio in censos:
-        grilla, regiones = grilla_poblacion(niv, anio, n)
-        paneles.append((f"Censo {anio}", grilla, _etiquetas(regiones)))
-        for parte in filter(None, nota_censo(censo, anio, niv).split("; ")):
+    for anio in anios:
+        grilla, regiones = grilla_variable(niv, anio, n, var)
+        paneles.append((var.etiqueta(anio), grilla, _etiquetas(regiones)))
+        for parte in filter(None, nota_censo(datos, anio, niv, var).split("; ")):
             anios_por_nota.setdefault(parte, []).append(anio)
-    notas = [f"{_rango_censos(a, list(censos))}: {nota}" for nota, a in anios_por_nota.items()]
-
-    # Alto de cada panel según la proporción real del territorio (Argentina es
-    # alta y angosta, Salta más ancha), para no dejar franjas vacías.
-    xmin, ymin, xmax, ymax = _limites(niv).to_crs(config.CRS_METRICO).total_bounds
-    ncols = min(columnas, len(paneles))
-    nfilas = math.ceil(len(paneles) / ncols)
-    ancho_panel = 4.5
-    alto_panel = ancho_panel * min(max((ymax - ymin) / (xmax - xmin), 0.6), 2.2)
-    pie = 0.45 + 0.22 * len(notas)
-    alto = alto_panel * nfilas + 0.95 + pie
-    fig, ejes = plt.subplots(nfilas, ncols, figsize=(ancho_panel * ncols, alto), squeeze=False)
-    fig.subplots_adjust(
-        left=0.01, right=0.99, top=1 - 0.95 / alto, bottom=pie / alto, wspace=0.04, hspace=0.12
+    notas = _agrupar_notas(anios_por_nota, list(anios))
+    periodo = "censo" if var.periodo == "censo" else "año"
+    return _figura_paneles(
+        niv,
+        paneles,
+        f"{niv.titulo}: superficie y {var.nombre} por {periodo}",
+        [f"Cada bloque = {_pct(n)}% del total · {_fuente(niv, var)}", *notas],
+        columnas,
     )
-    ejes = list(ejes.flat)
-    for ax, (titulo, grilla, etiquetas) in zip(ejes, paneles, strict=False):
-        grilla.draw(ax, background_style="none", labels=etiquetas)
-        ax.set_title(titulo, fontsize=14, fontweight="bold")
-    for ax in ejes[len(paneles) :]:
-        ax.set_axis_off()
 
-    fig.suptitle(
-        f"{niv.titulo}: superficie y población por censo",
-        fontsize=18,
-        fontweight="bold",
-        y=1 - 0.2 / alto,
+
+def comparar_variables(
+    nivel: str | Nivel,
+    anio: int,
+    variables: tuple[str, ...] = ("poblacion", "exportaciones"),
+    n: int = 1000,
+) -> Figure:
+    """Superficie + una variable por panel, para un mismo año. Si una variable no
+    tiene ese año (p. ej. población fuera de un censo),
+    usa el año disponible más cercano y lo indica en el título del panel."""
+    niv = _n(nivel)
+    paneles: list[tuple[str, AreaGrid | PopGrid, dict[str, str]]] = [
+        ("Superficie", grilla_superficie(niv, n), _etiquetas(_limites(niv)))
+    ]
+    pie = [f"Cada bloque = {_pct(n)}% del total de cada variable · Límites: IGN · popgrid"]
+    for clave in variables:
+        var = obtener_variable(clave)
+        datos = cargar_censo(niv, var)
+        disponibles = censos_disponibles(datos)
+        usado = min(disponibles, key=lambda a: (abs(a - anio), -a))
+        grilla, regiones = grilla_variable(niv, usado, n, var)
+        paneles.append((f"{var.titulo} · {var.etiqueta(usado)}", grilla, _etiquetas(regiones)))
+        nota = nota_censo(datos, usado, niv, var)
+        pie.append(f"{var.fuente}" + (f" ({nota})" if nota else ""))
+    nombres = _lista([obtener_variable(v).nombre for v in variables])
+    return _figura_paneles(
+        niv, paneles, f"{niv.titulo}: superficie, {nombres}", pie, columnas=len(paneles)
     )
-    pie_texto = [f"Cada bloque = {_pct(n)}% del total · {niv.fuente}"] + notas
-    fig.text(0.5, 0.12 / alto, "\n".join(pie_texto), ha="center", va="bottom", fontsize=9)
-    return fig

@@ -9,6 +9,7 @@ Uso:
     python scripts/grafico_serie.py zonas:salta
     python scripts/grafico_serie.py zonas:argentina
     python scripts/grafico_serie.py provincias --columnas 6
+    python scripts/grafico_serie.py zonas:argentina --variable exportaciones
 
 Guarda output/<nivel>_serie.png y output/<nivel>_serie.csv (los valores graficados).
 """
@@ -32,8 +33,10 @@ from popgrid_ar.censos import (  # noqa: E402
     columna,
     es_porcentaje,
 )
-from popgrid_ar.mapas import _colores, _rango_censos, nota_censo  # noqa: E402
+from popgrid_ar.mapas import _agrupar_notas, _colores, nota_censo  # noqa: E402
 from popgrid_ar.niveles import nivel as obtener_nivel  # noqa: E402
+from popgrid_ar.variables import VARIABLES  # noqa: E402
+from popgrid_ar.variables import variable as obtener_variable  # noqa: E402
 
 SUPERFICIE = "#fcfcfb"
 TINTA = "#0b0b0b"
@@ -45,10 +48,10 @@ def _num(v: float, decimales: int = 1) -> str:
     return f"{v:.{decimales}f}".replace(".", ",")
 
 
-def serie(clave: str) -> pd.DataFrame:
+def serie(clave: str, variable: str = "poblacion") -> pd.DataFrame:
     """% del total por región (columnas) y censo (filas). Las filas compuestas
     (Orán + San Martín) se asignan a su primera parte."""
-    censo = cargar_censo(clave)
+    censo = cargar_censo(clave, variable)
     niv = obtener_nivel(clave)
     # Sin redondeos intermedios: % calculado desde las personas (o el % publicado).
     tabla = censo[["codigo"]].copy()
@@ -69,13 +72,16 @@ def main() -> None:
     )
     parser.add_argument("nivel")
     parser.add_argument("--columnas", type=int, default=4)
+    parser.add_argument("--variable", choices=sorted(VARIABLES), default="poblacion")
     args = parser.parse_args()
 
     niv = obtener_nivel(args.nivel)
-    datos = serie(niv.clave)
+    var = obtener_variable(args.variable)
+    datos = serie(niv.clave, var.clave)
+    prefijo = niv.archivo if var.clave == "poblacion" else f"{niv.archivo}_{var.clave}"
     colores = _colores(niv, 1000)
     config.SALIDA.mkdir(parents=True, exist_ok=True)
-    datos.round(2).to_csv(config.SALIDA / f"{niv.archivo}_serie.csv", index_label="censo")
+    datos.round(2).to_csv(config.SALIDA / f"{prefijo}_serie.csv", index_label="censo")
 
     regiones = list(datos.columns)
     ncols = min(args.columnas, len(regiones))
@@ -93,9 +99,11 @@ def main() -> None:
         y = datos[region]
         ax.plot(anios, y, color=colores[region], linewidth=2.2, zorder=3)
         validos = y.dropna()
+        # Series largas (anuales): solo se marcan los extremos.
+        marcas = validos if len(validos) <= 15 else validos.iloc[[0, -1]]
         ax.scatter(
-            validos.index,
-            validos,
+            marcas.index,
+            marcas,
             s=14,
             color=colores[region],
             zorder=4,
@@ -143,7 +151,7 @@ def main() -> None:
     fig.text(
         0.02,
         1 - 0.35 / fig.get_figheight(),
-        f"{niv.titulo}: % de la población en cada censo",
+        f"{niv.titulo}: % {var.de} en cada {'censo' if var.periodo == 'censo' else 'año'}",
         fontsize=15,
         fontweight="bold",
         color=TINTA,
@@ -158,19 +166,19 @@ def main() -> None:
         color=TINTA_2,
         va="top",
     )
-    censo = cargar_censo(niv)
+    censo = cargar_censo(niv, var)
     anios_por_nota: dict[str, list[int]] = {}
     for anio in anios:
-        for parte in filter(None, nota_censo(censo, anio, niv).split("; ")):
+        for parte in filter(None, nota_censo(censo, anio, niv, var).split("; ")):
             anios_por_nota.setdefault(parte, []).append(anio)
-    fuente = niv.fuente.replace("Límites: IGN · Población: ", "").replace(" · popgrid", "")
+    fuente = (
+        niv.fuente.replace("Límites: IGN · Población: ", "").replace(" · popgrid", "")
+        if var.clave == "poblacion"
+        else var.fuente.split(": ", 1)[1]
+    )
     pie = f"Fuente: {fuente}."
     if anios_por_nota:
-        pie += (
-            " Notas: "
-            + "; ".join(f"{_rango_censos(a, anios)}: {n}" for n, a in anios_por_nota.items())
-            + "."
-        )
+        pie += " Notas: " + "; ".join(_agrupar_notas(anios_por_nota, anios)) + "."
     fig.text(0.02, 0.012, pie, fontsize=7.5, color=TINTA_2, wrap=True)
     fig.subplots_adjust(
         left=0.05,
@@ -180,7 +188,7 @@ def main() -> None:
         hspace=0.75,
         wspace=0.28,
     )
-    ruta = config.SALIDA / f"{niv.archivo}_serie.png"
+    ruta = config.SALIDA / f"{prefijo}_serie.png"
     fig.savefig(ruta, dpi=170, facecolor=SUPERFICIE)
     print(f"→ {ruta}")
     print(datos.round(1).to_string())

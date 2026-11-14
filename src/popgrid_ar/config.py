@@ -9,6 +9,7 @@ DATOS = RAIZ / "data"
 CRUDOS = DATOS / "raw"
 LIMITES = DATOS / "limites"
 CENSOS = DATOS / "censos"
+ECONOMIA = DATOS / "economia"  # series económicas por provincia (exportaciones, PBI)
 ZONAS = DATOS / "zonas"  # agrupaciones de departamentos: <provincia>.csv (codigo,departamento,zona)
 SALIDA = RAIZ / "output"
 

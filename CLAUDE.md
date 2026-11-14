@@ -12,6 +12,7 @@ uv run python scripts/descargar_limites.py              # IGN -> data/limites/
 uv run python scripts/construir_censos.py               # INDEC -> provincias.csv, departamentos.csv
 uv run python scripts/construir_salta_historico.py      # DGE Salta -> salta_historico.csv (necesita el anterior)
 uv run python scripts/construir_provincias_historico.py # INDEC Cuadro 7 -> provincias_historico.csv (necesita provincias.csv)
+uv run python scripts/construir_exportaciones.py        # INDEC OPEX -> data/economia/exportaciones_*.csv
 uv run python scripts/generar_mapas.py <nivel> --modo todo   # nivel: provincias, salta, zonas:salta, zonas:argentina, departamentos:<prov>
 uv run python scripts/grafico_serie.py <nivel>               # % por región y censo, en paneles chicos
 ```
@@ -22,6 +23,8 @@ En esta Mac el `python3` del PATH (`/Library/Frameworks/.../3.8`) falla con "Bad
 
 - `src/popgrid_ar/config.py`: única fuente de rutas, códigos INDEC (`PROVINCIAS`, `DEPARTAMENTOS_SALTA`), departamentos excluidos, `CONTENIDOS` (Lezama y Tolhuin dentro de su departamento de origen en 2001 y 2010) y etiquetas cortas.
 - `niveles.py`: **todo pasa por un `Nivel`** (`nivel("zonas:salta")`). Las claves son `provincias`, `departamentos:<prov>` (`salta` es atajo de `departamentos:66`), `zonas:<prov>` y `zonas:argentina`. `<prov>` acepta el código o el nombre. Un `Nivel` sabe sus regiones actuales (`nombres`), sus ausencias, el título, la unidad, el prefijo de archivos y la fuente. Las zonas tienen `base` (el nivel que agrupan) y `zonas_de` (el CSV en `data/zonas/`).
+- `variables.py`: `poblacion` y `exportaciones`. `cargar_censo(nivel, variable)` sirve para las dos, y los mapas (`mapa_variable`, `comparar_censos(..., variable=)`, `comparar_variables`) y `scripts/grafico_serie.py --variable` también. Los montos económicos van en columnas `val_AAAA`, donde 0 es válido. Las exportaciones existen solo por provincia (y por zonas armadas con provincias). La parte del total sin provincia asignada se informa en el pie (`Variable.sin_provincia_pct`).
+- **PBI: no usar Kummu por provincia** (quiebre en Córdoba; ver `data/economia/FUENTES.md`). La fuente buena es el VAB de CEPAL, que hay que bajar a mano porque cepal.org devuelve 403 a los scripts.
 - **Zonas:** se agrupan en `censos._agrupar_zonas` (suma censo a censo; una fila compuesta no puede cruzar zonas) y en `mapas._limites_cache` (dissolve de los límites del nivel base). Son categorías analíticas propuestas, no oficiales, y se editan en los CSV.
 - `limites.py`: descarga `ign:departamento` del WFS del IGN (campo `in1` = código INDEC de 5 dígitos, `nam` = nombre). Las provincias se arman con un **dissolve de departamentos antes de simplificar** (si se simplifica antes, quedan huecos).
 - `censos.py`: CSV anchos. `provincias.csv` tiene `codigo,nombre,pob_AAAA...`; `departamentos.csv` (todo el país, 528 filas) agrega la columna `provincia`. El nivel `salta` lee `salta_historico.csv` (1869-2022).
