@@ -23,7 +23,7 @@ from matplotlib.figure import Figure
 from popgrid import AreaGrid, PopGrid
 
 from . import config
-from .censos import cargar_censo, censos_disponibles, partes
+from .censos import cargar_censo, censos_disponibles, columna, es_porcentaje, partes
 from .limites import cargar_limites
 
 TITULOS = {"provincias": "Argentina", "salta": "Salta"}
@@ -53,16 +53,16 @@ def _limites(nivel: str) -> gpd.GeoDataFrame:
 
 
 def regiones_censo(limites: gpd.GeoDataFrame, censo: pd.DataFrame, anio: int) -> gpd.GeoDataFrame:
-    """Regiones de un censo con su población: une geometrías de filas compuestas
-    y omite las regiones sin dato."""
+    """Regiones de un censo con su peso (columna `valor`: personas o %): une las
+    geometrías de las filas compuestas y omite las regiones sin dato o con 0."""
     geom = limites.set_index("codigo").geometry
-    col = f"pob_{anio}"
-    filas = censo[censo[col].notna()]
+    col = columna(censo, anio)
+    filas = censo[censo[col].notna() & (censo[col] > 0)]
     return gpd.GeoDataFrame(
         {
             "codigo": filas["codigo"].to_list(),
             "nombre": filas["nombre"].to_list(),
-            col: filas[col].astype(float).to_list(),
+            "valor": filas[col].astype(float).to_list(),
         },
         geometry=[geom.loc[partes(c)].union_all() for c in filas["codigo"]],
         crs=limites.crs,
@@ -84,18 +84,32 @@ def _colores(nivel: str, n: int) -> dict[str, str]:
     return colores
 
 
-def nota_censo(regiones: gpd.GeoDataFrame, nivel: str) -> str:
-    """Aclaración para censos en que las regiones no son las actuales."""
+def _lista(nombres: list[str]) -> str:
+    return " y ".join(", ".join(nombres).rsplit(", ", 1))
+
+
+def nota_censo(censo: pd.DataFrame, anio: int, nivel: str) -> str:
+    """Aclaraciones para un censo: datos en %, regiones unidas, regiones que no
+    integraban el territorio y regiones con menos de medio bloque."""
     notas = []
-    compuestas = regiones[regiones["codigo"].str.contains(config.SEPARADOR_COMPUESTO, regex=False)]
-    notas += [f"{n} figuran juntos" for n in compuestas["nombre"]]
-    cubiertos = {p for c in regiones["codigo"] for p in partes(c)}
-    faltan = sorted(set(NOMBRES[nivel]) - cubiertos)
-    if faltan:
-        nombres = ", ".join(NOMBRES[nivel][c] for c in faltan)
-        notas.append(
-            f"sin {nombres} (aún no integraba{'n' if len(faltan) > 1 else ''} {TITULOS[nivel]})"
-        )
+    col = columna(censo, anio)
+    valores = censo.set_index("codigo")[col]
+    if es_porcentaje(col):
+        notas.append("% publicado por el INDEC con un decimal")
+        if sin_asignar := config.SIN_JURISDICCION_PCT.get(anio):
+            notas.append(f"{sin_asignar:.1f}% sin provincia asignada".replace(".", ","))
+    con_dato = valores.dropna()
+    compuestos = [c for c in con_dato.index if config.SEPARADOR_COMPUESTO in c]
+    nombres_fila = censo.set_index("codigo")["nombre"]
+    notas += [f"{nombres_fila[c]} figuran juntos" for c in compuestos]
+    cubiertos = {p for c in con_dato.index for p in partes(c)}
+    if faltan := sorted(set(NOMBRES[nivel]) - cubiertos):
+        plural = "n" if len(faltan) > 1 else ""
+        nombres = _lista([NOMBRES[nivel][c] for c in faltan])
+        notas.append(f"sin {nombres} (aún no integraba{plural} {TITULOS[nivel]})")
+    if ceros := [nombres_fila[c] for c in con_dato.index if con_dato[c] == 0]:
+        plural = "n" if len(ceros) > 1 else ""
+        notas.append(f"{_lista(ceros)}: menos de 0,05%, no llega{plural} a medio bloque")
     return "; ".join(notas)
 
 
@@ -127,7 +141,7 @@ def grilla_poblacion(nivel: str, anio: int, n: int = 1000) -> tuple[PopGrid, gpd
     grilla = PopGrid.from_geodataframe(
         regiones,
         region_col="nombre",
-        weight_col=f"pob_{anio}",
+        weight_col="valor",
         n=n,
         color_map={r: colores[r] for r in regiones["nombre"] if r in colores},
     )
@@ -145,7 +159,7 @@ def mapa_superficie(nivel: str, n: int = 1000) -> Figure:
 
 def mapa_poblacion(nivel: str, anio: int, n: int = 1000) -> Figure:
     grilla, regiones = grilla_poblacion(nivel, anio, n)
-    nota = nota_censo(regiones, nivel)
+    nota = nota_censo(cargar_censo(nivel), anio, nivel)
     return grilla.plot(
         title=f"Población de {TITULOS[nivel]} · Censo {anio}",
         subtitle=f"Cada bloque = {_pct(n)}% de la población {UNIDAD[nivel]}",
@@ -162,7 +176,8 @@ def comparar_censos(
     columnas: int = 4,
 ) -> Figure:
     """Grilla de mapas: superficie (opcional) + un mapa por censo."""
-    censos = censos or censos_disponibles(cargar_censo(nivel))
+    censo = cargar_censo(nivel)
+    censos = censos or censos_disponibles(censo)
     if not censos:
         raise ValueError("No hay ningún censo completo cargado en data/censos/.")
 
@@ -173,7 +188,7 @@ def comparar_censos(
     for anio in censos:
         grilla, regiones = grilla_poblacion(nivel, anio, n)
         paneles.append((f"Censo {anio}", grilla, _etiquetas(regiones)))
-        for parte in filter(None, nota_censo(regiones, nivel).split("; ")):
+        for parte in filter(None, nota_censo(censo, anio, nivel).split("; ")):
             anios_por_nota.setdefault(parte, []).append(anio)
     notas = [f"{_rango_censos(a, list(censos))}: {nota}" for nota, a in anios_por_nota.items()]
 

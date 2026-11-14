@@ -108,3 +108,42 @@ aparecen en una fila sin nombre.
 Los mapas usan los límites actuales del IGN para todos los años. Otros cambios
 menores de límites entre departamentos no están documentados en el cuadro y no
 se corrigen.
+
+---
+
+# Provincias 1895-1991: `provincias_historico.csv`
+
+Lo genera [`scripts/construir_provincias_historico.py`](../../scripts/construir_provincias_historico.py).
+
+| Censos | Cuadro | Archivo |
+|---|---|---|
+| 1895, 1914, 1947, 1960, 1970, 1980 y 1991 | INDEC, Censo 2010, Resultados definitivos, Serie B nº 2, Tomo 1, Cuadro 7: *"Distribución relativa de la población según provincia. Total del país. Años 1895/2010"* (pág. 63 de la publicación, 64 del PDF). | [`censo2010_tomo1.pdf`](https://www.indec.gob.ar/ftp/cuadros/poblacion/censo2010_tomo1.pdf) |
+
+**El dato es un porcentaje con un decimal, no una cantidad de personas.** Es lo
+único que el INDEC publica por provincia para esos censos en una sola serie
+oficial. Por eso las columnas se llaman `pct_AAAA`, y no `pob_AAAA`.
+
+## Controles
+
+- Las 24 provincias tienen 9 valores (1895 a 2010).
+- Cada censo suma 100 ± 0,6, contando la población sin jurisdicción determinada.
+- 2001 y 2010, que también figuran en el cuadro, coinciden con los porcentajes
+  calculados desde `provincias.csv`. La diferencia máxima es 0,051 puntos
+  (Buenos Aires 2010: 38,949% exacto, publicado como 39,0).
+
+## Notas del cuadro
+
+- **Jurisdicciones sin determinar:** 2,2% en 1895 y 0,2% en 1914. Corresponden a
+  60.000 "personas sustraídas a la operación censal" y 30.000 indígenas en 1895, y a
+  18.425 personas de "población autóctona" en 1914, sin ubicación geográfica. No se
+  reparten entre provincias (`config.SIN_JURISDICCION_PCT`).
+- **Valores 0:** Santa Cruz en 1895 (publicado "0,0") y Tierra del Fuego en 1895,
+  1914 y 1947 (publicado "–"). Son menos del 0,05% y no llegan a medio bloque, así
+  que no se dibujan esos años.
+- **Territorios:** antes de su provincialización (1951-1955, y 1990 en Tierra del
+  Fuego), Chaco, Formosa, Misiones, La Pampa y la Patagonia eran territorios
+  nacionales. El cuadro ya los presenta con los nombres de las provincias actuales.
+  La ex gobernación de Los Andes (1900-1943) no aparece aparte en el cuadro.
+- **Precisión:** con un decimal, una provincia chica puede tener un error relativo
+  grande (0,4 puede ser 0,35 o 0,45). Para comparar entre censos sirve; para calcular
+  tasas de crecimiento no conviene.

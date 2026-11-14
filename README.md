@@ -1,6 +1,6 @@
 # popgrid-argentina
 
-**Mapas de bloques de Argentina y de Salta: cómo cambió el peso de cada provincia y de cada departamento a lo largo de los censos. Salta por departamento desde 1869; provincias desde 2001.**
+**Mapas de bloques de Argentina y de Salta: cómo cambió el peso de cada provincia y de cada departamento a lo largo de los censos. Salta por departamento desde 1869; provincias desde 1895.**
 
 Este proyecto usa [popgrid](https://github.com/databites-tech/popgrid) para dibujar *block cartograms*: mapas en los que **cada bloque representa la misma porción del total**. Con 1.000 bloques, cada uno equivale al 0,1% de la superficie o al 0,1% de la población. El mismo territorio, con los mismos colores, se dibuja de dos formas. Donde la tierra y la gente no coinciden aparece la historia.
 
@@ -8,7 +8,7 @@ Dos niveles de análisis:
 
 | Nivel | Censos | Regiones | Pregunta |
 |---|---|---|---|
-| `provincias` | 2001, 2010, 2022 | 24 jurisdicciones | ¿Qué provincias ganaron o perdieron peso en la población del país? |
+| `provincias` | 10 censos, de 1895 a 2022 | 24 jurisdicciones | ¿Qué provincias ganaron o perdieron peso en la población del país? |
 | `salta` | los 11 censos nacionales, de 1869 a 2022 | 23 departamentos | ¿Cuánto se concentra Salta en Capital? ¿Qué pasó con el norte (Orán, San Martín) y con los Valles? |
 
 Como el total cambia de un censo a otro, los mapas de distintos años muestran el **peso relativo** de cada región. Un departamento puede haber crecido en habitantes y, aun así, achicarse en el mapa si creció menos que el resto.
@@ -22,10 +22,18 @@ En 1869, Capital tenía el 19% de la población salteña y los Valles Calchaquí
 Hasta 1947, Orán y San Martín eran un solo departamento, y así se dibujan. Los Andes (la Puna) pasó a Salta recién en 1943, por eso no aparece en 1869 ni en 1895.
 
 <p align="center">
-  <img src="docs/img/provincias_comparacion.png" width="100%" alt="Argentina por superficie y por población en los censos 2001, 2010 y 2022">
+  <img src="docs/img/salta_serie.png" width="100%" alt="Gráfico de líneas: porcentaje de la población de Salta en Capital, Orán y San Martín, Valle de Lerma, Valles Calchaquíes y resto de la provincia, 1869-2022">
 </p>
 
-Buenos Aires y CABA suman el 45% del país. La Patagonia, enorme en superficie, ocupa una franja angosta. Neuquén, Santa Cruz y Tierra del Fuego son las que más peso ganaron; CABA y Santa Fe, las que más perdieron.
+La misma serie, en líneas (`uv run python scripts/grafico_serie_salta.py`). Los valores están en `output/salta_serie_participacion.csv`.
+
+<p align="center">
+  <img src="docs/img/provincias_comparacion.png" width="100%" alt="Argentina por superficie y por población en los censos de 1895 a 2022">
+</p>
+
+En 1895, CABA y Buenos Aires tenían el 39% del país. Hoy suman el 45%, pero repartido al revés: CABA pasó de casi el 20% (1914) al 7%, y la provincia de Buenos Aires, del 23% al 38%. El noroeste perdió peso entre 1895 y 1914 (Salta pasó del 2,9% al 1,8%) y lo fue recuperando de a poco: en 2022 Salta está en el 3,1%. Chaco, Formosa y la Patagonia casi no aparecen en 1895 (entre todas suman menos del 2%) y crecen a medida que se pueblan los ex territorios nacionales.
+
+Los mapas de 1895 a 1991 usan el porcentaje por provincia que publica el INDEC con un decimal (Censo 2010, Tomo 1, Cuadro 7). Con 1.000 bloques, una décima es un bloque, así que alcanza para el mapa. Desde 2001 se usan las cantidades exactas de personas.
 
 ---
 
@@ -64,7 +72,8 @@ Baja la capa de departamentos del [IGN](https://www.ign.gob.ar/) (~140 MB, queda
 
 La población ya está cargada en:
 
-- [`data/censos/provincias.csv`](data/censos/provincias.csv): 24 jurisdicciones; 2001, 2010 y 2022.
+- [`data/censos/provincias.csv`](data/censos/provincias.csv): 24 jurisdicciones; 2001, 2010 y 2022, en personas.
+- [`data/censos/provincias_historico.csv`](data/censos/provincias_historico.csv): las mismas 24, de 1895 a 1991, en % del país con un decimal (columnas `pct_AAAA`), porque el INDEC no publica la serie en personas. Se regenera con `uv run python scripts/construir_provincias_historico.py --forzar`.
 - [`data/censos/departamentos.csv`](data/censos/departamentos.csv): los 528 departamentos, partidos y comunas del país, con su código INDEC; 2001, 2010 y 2022. Salta es el subconjunto que empieza con `66`.
 - [`data/censos/salta_historico.csv`](data/censos/salta_historico.csv): los 23 departamentos de Salta en los 11 censos nacionales, de 1869 a 2022. La fila `66126+66056` representa a Orán y San Martín cuando todavía eran un solo departamento (hasta 1947). Es la serie que usa el nivel `salta`, y se regenera con `uv run python scripts/construir_salta_historico.py --forzar`.
 
@@ -135,6 +144,8 @@ tabla_participacion(cargar_censo("salta"))
 │   ├── descargar_limites.py
 │   ├── construir_censos.py
 │   ├── construir_salta_historico.py
+│   ├── construir_provincias_historico.py
+│   ├── grafico_serie_salta.py
 │   └── generar_mapas.py
 ├── data/
 │   ├── censos/        # CSV de población 2001/2010/2022 + FUENTES.md (versionado)
@@ -149,7 +160,7 @@ tabla_participacion(cargar_censo("salta"))
 ## Fuentes
 
 - **Límites:** Instituto Geográfico Nacional (IGN), capa `departamento` del [servicio WFS](https://wms.ign.gob.ar/geoserver/ows). Incluye el código INDEC de cada departamento, que se usa para unir con los censos.
-- **Población:** INDEC, Censos Nacionales de Población, Hogares y Viviendas 2001, 2010 y 2022. Para la serie de Salta desde 1869, la [Dirección General de Estadísticas de Salta](https://estadisticas.salta.gov.ar/) (Anuario 2025, cuadro 2.1.1, sobre la base de los censos nacionales del INDEC). El detalle de cada cuadro está en [`data/censos/FUENTES.md`](data/censos/FUENTES.md).
+- **Población:** INDEC, Censos Nacionales de Población, Hogares y Viviendas 2001, 2010 y 2022. Para provincias de 1895 a 1991, INDEC, Censo 2010, Tomo 1, Cuadro 7 (distribución porcentual). Para la serie de Salta desde 1869, la [Dirección General de Estadísticas de Salta](https://estadisticas.salta.gov.ar/) (Anuario 2025, cuadro 2.1.1, sobre la base de los censos nacionales del INDEC). El detalle de cada cuadro está en [`data/censos/FUENTES.md`](data/censos/FUENTES.md).
 
 ## Créditos
 

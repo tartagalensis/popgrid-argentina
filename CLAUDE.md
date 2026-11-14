@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Mapas de bloques (block cartograms) de las provincias argentinas (censos 2001, 2010 y 2022) y de los departamentos de Salta (los 11 censos nacionales, de 1869 a 2022). Usa la librería [popgrid](https://github.com/databites-tech/popgrid) como dependencia y no la forkea. Docs y nombres del dominio en español.
+Mapas de bloques (block cartograms) de las provincias argentinas (10 censos, de 1895 a 2022) y de los departamentos de Salta (los 11 censos nacionales, de 1869 a 2022). Usa la librería [popgrid](https://github.com/databites-tech/popgrid) como dependencia y no la forkea. Docs y nombres del dominio en español.
 
 ## Comandos
 
@@ -11,6 +11,8 @@ uv run ruff check . && uv run ruff format .             # lint / formato
 uv run python scripts/descargar_limites.py              # IGN -> data/limites/
 uv run python scripts/construir_censos.py               # INDEC -> provincias.csv, departamentos.csv
 uv run python scripts/construir_salta_historico.py      # DGE Salta -> salta_historico.csv (necesita el anterior)
+uv run python scripts/construir_provincias_historico.py # INDEC Cuadro 7 -> provincias_historico.csv (necesita provincias.csv)
+uv run python scripts/grafico_serie_salta.py            # gráfico de líneas de la serie de Salta
 uv run python scripts/generar_mapas.py salta --modo todo
 ```
 
@@ -30,7 +32,7 @@ En esta Mac el `python3` del PATH (`/Library/Frameworks/.../3.8`) falla con "Bad
 ## Reglas de datos
 
 - **No inventar ni estimar cifras censales.** `data/censos/*.csv` lo generan `scripts/construir_censos.py` (INDEC) y `scripts/construir_salta_historico.py` (DGE Salta). Los enlaces están en `data/censos/FUENTES.md`. No editar a mano: si hay que corregir algo, corregir el script y regenerar.
-- **Provincias antes de 2001:** el INDEC (Censo 2010, Tomo 1, Cuadro 7, p. 63) publica la distribución por provincia de 1895 a 2010 solo en porcentajes con un decimal. Además, los territorios nacionales y la gobernación de Los Andes (1900-1943) no coinciden con las provincias actuales. Todavía no está cargado.
+- **Provincias 1895-1991:** `provincias_historico.csv` (`scripts/construir_provincias_historico.py`) tiene **porcentajes con un decimal**, del INDEC, Censo 2010, Tomo 1, Cuadro 7 (página 64 del PDF; se lee con `pypdf` en modo `layout`). Las columnas son `pct_AAAA`, no `pob_AAAA`. `cargar_censo("provincias")` une esta tabla con `provincias.csv`. Usar siempre `censos.columna(df, anio)` en vez de armar `f"pob_{anio}"`. Un valor 0 significa menos de 0,05% y no se dibuja. La población sin provincia asignada (1895 y 1914) está en `config.SIN_JURISDICCION_PCT`.
 - Para sumar un censo hay que agregar la columna `pob_AAAA`, su fuente en el script y una fila en FUENTES.md.
 - Las páginas del INDEC se cargan por JS. El listado real de cuadros del Censo 2022 está en `https://www.indec.gob.ar/Nivel4/Tema/2/41/165`, y el de 2010 por provincia en `/Nivel4/CensoProvincia/3/999/<cod_prov>/000/2010`.
 - Los códigos INDEC son texto con ceros iniciales (`"02"`, `"06"`, `"66007"`). Leer siempre con `dtype={"codigo": str}`.

@@ -92,6 +92,11 @@ AUSENCIAS_SALTA = {
 # Filas compuestas (códigos unidos con "+") para departamentos que luego se dividieron.
 SEPARADOR_COMPUESTO = "+"
 
+# INDEC, Censo 2010, Tomo 1, Cuadro 7: % de la población del país sin provincia
+# asignada ("jurisdicciones sin determinar"). En los demás censos es 0; si la
+# columna no suma 100 es solo por redondeo.
+SIN_JURISDICCION_PCT = {1895: 2.2, 1914: 0.2}
+
 # Etiquetas más cortas para nombres que no entran en los bloques.
 ETIQUETAS = {
     "Orán y General José de San Martín": "Orán + San Martín",

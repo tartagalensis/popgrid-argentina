@@ -28,6 +28,7 @@ from . import config
 
 ARCHIVO_PROVINCIAS = config.CENSOS / "provincias.csv"
 ARCHIVO_DEPARTAMENTOS = config.CENSOS / "departamentos.csv"
+ARCHIVO_PROVINCIAS_HISTORICO = config.CENSOS / "provincias_historico.csv"
 ARCHIVO_SALTA_HISTORICO = config.CENSOS / "salta_historico.csv"
 ARCHIVOS = {"provincias": ARCHIVO_PROVINCIAS, "salta": ARCHIVO_SALTA_HISTORICO}
 CODIGOS_ESPERADOS = {
@@ -35,7 +36,9 @@ CODIGOS_ESPERADOS = {
     "salta": config.DEPARTAMENTOS_SALTA,
 }
 AUSENCIAS = {"provincias": {}, "salta": config.AUSENCIAS_SALTA}
-_PATRON_CENSO = re.compile(r"^pob_(\d{4})$")
+# pob_AAAA: personas (exacto). pct_AAAA: % del total publicado con un decimal
+# (provincias 1895-1991, INDEC solo publica porcentajes). Si hay ambos, manda pob.
+_PATRON_CENSO = re.compile(r"^(pob|pct)_(\d{4})$")
 
 
 def partes(codigo: str) -> list[str]:
@@ -43,9 +46,18 @@ def partes(codigo: str) -> list[str]:
     return codigo.split(config.SEPARADOR_COMPUESTO)
 
 
+def columna(df: pd.DataFrame, anio: int) -> str:
+    """Nombre de la columna que tiene el dato de `anio` (pob_AAAA o pct_AAAA)."""
+    return columnas_censo(df)[anio]
+
+
+def es_porcentaje(col: str) -> bool:
+    return col.startswith("pct_")
+
+
 def cobertura(df: pd.DataFrame, anio: int) -> list[str]:
     """Códigos actuales cubiertos por las filas con dato en `anio` (con repeticiones)."""
-    con_dato = df.loc[df[f"pob_{anio}"].notna(), "codigo"]
+    con_dato = df.loc[df[columna(df, anio)].notna(), "codigo"]
     return [c for codigo in con_dato for c in partes(codigo)]
 
 
@@ -55,12 +67,12 @@ def _faltantes(df: pd.DataFrame, nivel: str, anio: int) -> set[str]:
 
 
 def columnas_censo(df: pd.DataFrame) -> dict[int, str]:
-    """Devuelve {año: columna} para cada columna `pob_AAAA`."""
-    salida = {}
+    """Devuelve {año: columna} para cada columna `pob_AAAA` o `pct_AAAA`."""
+    salida: dict[int, str] = {}
     for col in df.columns:
         m = _PATRON_CENSO.match(col)
-        if m:
-            salida[int(m.group(1))] = col
+        if m and (int(m.group(2)) not in salida or m.group(1) == "pob"):
+            salida[int(m.group(2))] = col
     return dict(sorted(salida.items()))
 
 
@@ -77,10 +89,15 @@ def validar(df: pd.DataFrame, nivel: str) -> None:
     if sobran := {p for c in presentes for p in partes(c)} - esperados:
         problemas.append(f"códigos desconocidos: {sorted(sobran)}")
     if not columnas_censo(df):
-        problemas.append("no hay columnas pob_AAAA")
+        problemas.append("no hay columnas pob_AAAA ni pct_AAAA")
     for anio, col in columnas_censo(df).items():
         valores = df[col].dropna()
-        if (valores <= 0).any():
+        if es_porcentaje(col):
+            # 0 = menos de 0,05% (el cuadro publica 0,0 o "–"). La suma puede quedar
+            # debajo de 100: en 1895 hay un 2,2% sin jurisdicción determinada.
+            if (valores < 0).any() or not 97 <= valores.sum() <= 101:
+                problemas.append(f"censo {anio}: porcentajes fuera de rango")
+        elif (valores <= 0).any():
             problemas.append(f"censo {anio}: hay valores <= 0")
         cubiertos = cobertura(df, anio)
         if len(cubiertos) != len(set(cubiertos)):
@@ -91,8 +108,10 @@ def validar(df: pd.DataFrame, nivel: str) -> None:
 
 def _leer(ruta) -> pd.DataFrame:
     df = pd.read_csv(ruta, dtype={"codigo": str})
-    for col in columnas_censo(df).values():
-        df[col] = pd.to_numeric(df[col], errors="raise").astype("Int64")
+    for col in df.columns:
+        if _PATRON_CENSO.match(col):
+            tipo = "Float64" if es_porcentaje(col) else "Int64"
+            df[col] = pd.to_numeric(df[col], errors="raise").astype(tipo)
     return df
 
 
@@ -114,6 +133,10 @@ def cargar_censo(nivel: str) -> pd.DataFrame:
     if nivel not in ARCHIVOS:
         raise ValueError(f"Nivel desconocido {nivel!r}; opciones: {config.NIVELES}")
     df = _leer(ARCHIVOS[nivel])
+    if nivel == "provincias" and ARCHIVO_PROVINCIAS_HISTORICO.exists():
+        historico = _leer(ARCHIVO_PROVINCIAS_HISTORICO).drop(columns="nombre")
+        df = historico.merge(df, on="codigo", how="right", validate="1:1")
+        df = df[["codigo", "nombre", *columnas_censo(df).values()]]
     validar(df, nivel)
     df.attrs["nivel"] = nivel
     return df
@@ -131,20 +154,29 @@ def censos_disponibles(df: pd.DataFrame, nivel: str | None = None) -> list[int]:
 
 
 def tabla_participacion(df: pd.DataFrame) -> pd.DataFrame:
-    """Participación (%) de cada fila en el total de cada censo completo,
-    más la variación en puntos porcentuales entre el primer y el último censo.
+    """Participación (%) de cada fila en el total de cada censo disponible, la
+    variación en puntos porcentuales entre el primer y el último censo, y el
+    crecimiento (%) entre el primer y el último censo con cantidades exactas.
+    Para los censos que solo tienen porcentaje publicado, se usa ese valor.
     """
     anios = censos_disponibles(df)
     salida = df[["codigo", "nombre"]].copy()
+    con_personas = []
     for anio in anios:
-        col = f"pob_{anio}"
-        salida[col] = df[col]
-        salida[f"pct_{anio}"] = (df[col] / df[col].sum() * 100).astype(float).round(2)
+        col = columna(df, anio)
+        if es_porcentaje(col):
+            salida[f"pct_{anio}"] = df[col].astype(float)
+        else:
+            con_personas.append(anio)
+            salida[col] = df[col]
+            salida[f"pct_{anio}"] = (df[col] / df[col].sum() * 100).astype(float).round(2)
     if len(anios) >= 2:
         primero, ultimo = anios[0], anios[-1]
         salida[f"var_pp_{primero}_{ultimo}"] = (
             salida[f"pct_{ultimo}"] - salida[f"pct_{primero}"]
         ).round(2)
+    if len(con_personas) >= 2:
+        primero, ultimo = con_personas[0], con_personas[-1]
         salida[f"crec_pct_{primero}_{ultimo}"] = (
             ((df[f"pob_{ultimo}"] / df[f"pob_{primero}"] - 1) * 100).astype(float).round(1)
         )

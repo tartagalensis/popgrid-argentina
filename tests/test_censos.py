@@ -16,11 +16,35 @@ from popgrid_ar.censos import (
 CENSOS_SALTA = [1869, 1895, 1914, 1947, 1960, 1970, 1980, 1991, 2001, 2010, 2022]
 
 
+CENSOS_PROVINCIAS = [1895, 1914, 1947, 1960, 1970, 1980, 1991, 2001, 2010, 2022]
+
+
 def test_provincias_valida():
     df = cargar_censo("provincias")
     assert df["codigo"].str.len().eq(2).all()
-    assert list(columnas_censo(df)) == [2001, 2010, 2022]
-    assert censos_disponibles(df) == [2001, 2010, 2022]
+    assert censos_disponibles(df) == CENSOS_PROVINCIAS
+    # 1895-1991 en % (INDEC, Cuadro 7); desde 2001, personas.
+    cols = columnas_censo(df)
+    assert all(cols[a].startswith("pct_") for a in CENSOS_PROVINCIAS[:7])
+    assert all(cols[a].startswith("pob_") for a in CENSOS_PROVINCIAS[7:])
+
+
+def test_provincias_historico_porcentajes():
+    df = cargar_censo("provincias").set_index("codigo")
+    # 1895: 2,2% sin jurisdicción determinada; 1914: 0,2%.
+    assert df["pct_1895"].sum() == pytest.approx(97.8, abs=0.3)
+    assert df["pct_1914"].sum() == pytest.approx(99.8, abs=0.3)
+    # Tierra del Fuego < 0,05% hasta 1947 (se guarda como 0).
+    assert (df.loc["94", ["pct_1895", "pct_1914", "pct_1947"]] == 0).all()
+    assert df.loc["66", "pct_1895"] == 2.9  # Salta
+
+
+def test_tabla_participacion_mezcla_porcentajes_y_personas():
+    t = tabla_participacion(cargar_censo("provincias")).set_index("codigo")
+    assert "pob_1895" not in t.columns and "pct_1895" in t.columns
+    assert t["pct_2022"].sum() == pytest.approx(100, abs=0.1)
+    assert "var_pp_1895_2022" in t.columns
+    assert "crec_pct_2001_2022" in t.columns
 
 
 def test_salta_historico_todos_los_censos_disponibles():
