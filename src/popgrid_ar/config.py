@@ -84,8 +84,17 @@ DEPARTAMENTOS_SALTA = {
     "66161": "Santa Victoria",
 }
 
+# Serie histórica de Salta (1869-2022). Departamentos que en algunos censos no
+# formaban parte de la provincia: no se dibujan en esos años.
+AUSENCIAS_SALTA = {
+    "66105": (1869, 1895),  # Los Andes: ex gobernación de Los Andes, anexada en 1943
+}
+# Filas compuestas (códigos unidos con "+") para departamentos que luego se dividieron.
+SEPARADOR_COMPUESTO = "+"
+
 # Etiquetas más cortas para nombres que no entran en los bloques.
 ETIQUETAS = {
+    "Orán y General José de San Martín": "Orán + San Martín",
     "General José de San Martín": "San Martín",
     "Rosario de la Frontera": "R. de la Frontera",
     "Santiago del Estero": "Sgo. del Estero",

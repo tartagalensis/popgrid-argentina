@@ -67,3 +67,44 @@ Para comparar esas zonas entre censos hay que sumarlas al departamento de origen
   las nombra "Comuna N" y las une por la población de 2010.
 - **Salta:** los 23 departamentos son los mismos, con los mismos nombres, en los tres censos.
 - Los cuadros descargados se guardan en `data/raw/indec/`, que git ignora.
+
+---
+
+# Salta 1869-2022: `salta_historico.csv`
+
+Lo genera [`scripts/construir_salta_historico.py`](../../scripts/construir_salta_historico.py).
+
+| Censos | Cuadro | Archivo |
+|---|---|---|
+| 1869, 1895, 1914, 1947, 1960, 1970, 1980, 1991, 2001, 2010 y 2022 | Dirección General de Estadísticas de Salta, Anuario 2025, cuadro 2.1.1: *"Población según departamento. Provincia de Salta. Años 1869, 1895, 1914, 1947, 1960, 1970, 1980, 1991, 2001, 2010 y 2022"*. Fuente primaria declarada en el cuadro: INDEC, censos nacionales. | `https://estadisticas.salta.gov.ar/web/archivos/anuarios/ANUARIO-2025/02-POBLACIÓN Y HOGARES/2.01 Población/A25-2-1-1.xlsx` (página: [2.01 Población](https://estadisticas.salta.gov.ar/web/level3/2/2/1395/1/null)) |
+
+Fecha de consulta: 13/11/2026.
+
+## Controles
+
+- En los 11 censos, los departamentos suman exactamente el total provincial del cuadro.
+- 2001, 2010 y 2022 coinciden, departamento por departamento, con los cuadros del INDEC
+  de `departamentos.csv`.
+
+## Totales de Salta
+
+| 1869 | 1895 | 1914 | 1947 | 1960 | 1970 | 1980 | 1991 | 2001 | 2010 | 2022 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 88.933 | 118.015 | 142.156 | 290.826 | 412.854 | 509.803 | 662.870 | 866.153 | 1.079.051 | 1.214.441 | 1.441.351 |
+
+Ojo: algunas fuentes secundarias (por ejemplo, Wikipedia) dan 230.445 para 1947.
+Esa cifra deja afuera a Orán y San Martín (60.381 personas), que en el cuadro
+aparecen en una fila sin nombre.
+
+## Cambios de límites (notas del cuadro)
+
+| Caso | Qué dice el cuadro | Cómo se trata |
+|---|---|---|
+| Orán y General José de San Martín | Hasta 1947 eran un solo departamento, Orán (nota 4). | Fila compuesta `66126+66056`, con valores de 1869 a 1947. En esos años las filas de Orán y San Martín quedan vacías. En los mapas se dibuja la unión de los dos. |
+| Los Andes | Sin dato en 1869 y 1895. En 1914 figura la población de los departamentos San Antonio de los Cobres y Pastos Grandes, de la ex gobernación de Los Andes, que se anexaron a Salta en 1943 (nota 3). El total de 1914 la incluye. | Vacío en 1869 y 1895 (`config.AUSENCIAS_SALTA`): no se dibuja esos años. En 1914 se usa el valor del cuadro. |
+| La Poma, 1914 | Excluye el pueblo de San Antonio de los Cobres, que había pasado a la gobernación de Los Andes (nota 2). | Se usa el valor del cuadro. |
+| General Güemes | Hasta 1947 se llamaba Campo Santo (nota 1). | Mismo código y mismo territorio; solo cambia el nombre. |
+
+Los mapas usan los límites actuales del IGN para todos los años. Otros cambios
+menores de límites entre departamentos no están documentados en el cuadro y no
+se corrigen.

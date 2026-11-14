@@ -13,17 +13,55 @@ from popgrid_ar.censos import (
     validar,
 )
 
+CENSOS_SALTA = [1869, 1895, 1914, 1947, 1960, 1970, 1980, 1991, 2001, 2010, 2022]
 
-@pytest.mark.parametrize("nivel", config.NIVELES)
-def test_tablas_reales_son_validas(nivel):
-    df = cargar_censo(nivel)
-    assert df["codigo"].str.len().eq(2 if nivel == "provincias" else 5).all()
+
+def test_provincias_valida():
+    df = cargar_censo("provincias")
+    assert df["codigo"].str.len().eq(2).all()
     assert list(columnas_censo(df)) == [2001, 2010, 2022]
+    assert censos_disponibles(df) == [2001, 2010, 2022]
 
 
-def test_censos_completos_para_mapas():
-    assert censos_disponibles(cargar_censo("provincias")) == [2001, 2010, 2022]
-    assert censos_disponibles(cargar_censo("salta")) == [2001, 2010, 2022]
+def test_salta_historico_todos_los_censos_disponibles():
+    df = cargar_censo("salta")
+    assert list(columnas_censo(df)) == CENSOS_SALTA
+    assert censos_disponibles(df) == CENSOS_SALTA
+
+
+def test_salta_historico_coincide_con_indec_desde_2001():
+    historico = cargar_censo("salta").set_index("codigo")
+    indec = cargar_departamentos(config.CODIGO_SALTA).set_index("codigo")
+    for anio in (2001, 2010, 2022):
+        col = f"pob_{anio}"
+        assert (historico.loc[indec.index, col] == indec[col]).all(), anio
+
+
+def test_salta_historico_suma_el_total_provincial():
+    historico = cargar_censo("salta")
+    provincias = cargar_censo("provincias").set_index("codigo")
+    for anio in (2001, 2010, 2022):
+        assert historico[f"pob_{anio}"].sum() == provincias.loc["66", f"pob_{anio}"]
+
+
+def test_salta_historico_oran_san_martin_y_los_andes():
+    df = cargar_censo("salta").set_index("codigo")
+    hasta_1947 = [f"pob_{a}" for a in (1869, 1895, 1914, 1947)]
+    desde_1960 = [f"pob_{a}" for a in CENSOS_SALTA[4:]]
+    # Orán y San Martín: juntos hasta 1947, separados desde 1960.
+    assert df.loc["66126+66056", hasta_1947].notna().all()
+    assert df.loc["66126+66056", desde_1960].isna().all()
+    assert df.loc[["66126", "66056"], hasta_1947].isna().all().all()
+    assert df.loc[["66126", "66056"], desde_1960].notna().all().all()
+    # Los Andes: sin dato en 1869 y 1895.
+    assert df.loc["66105", ["pob_1869", "pob_1895"]].isna().all()
+
+
+def test_validar_detecta_doble_conteo():
+    df = cargar_censo("salta").copy()
+    df.loc[df["codigo"] == "66126", "pob_1947"] = 1  # Orán también dentro de la fila compuesta
+    with pytest.raises(ValueError, match="dos veces"):
+        validar(df, "salta")
 
 
 def test_departamentos_suman_el_total_de_cada_provincia():
