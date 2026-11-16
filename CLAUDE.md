@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Mapas de bloques (block cartograms) de las provincias argentinas (10 censos, de 1895 a 2022) y de los departamentos de Salta (los 11 censos nacionales, de 1869 a 2022). Usa la librería [popgrid](https://github.com/databites-tech/popgrid) como dependencia y no la forkea. Docs y nombres del dominio en español.
+Mapas de bloques (block cartograms) de las provincias argentinas (10 censos, de 1895 a 2022), de los departamentos de Salta (los 11 censos nacionales, de 1869 a 2022), de zonas analíticas y de exportaciones por provincia (1993-2025). Usa la librería [popgrid](https://github.com/databites-tech/popgrid) como dependencia y no la forkea. Docs y nombres del dominio en español.
 
 ## Comandos
 
@@ -17,7 +17,20 @@ uv run python scripts/generar_mapas.py <nivel> --modo todo   # nivel: provincias
 uv run python scripts/grafico_serie.py <nivel>               # % por región y censo, en paneles chicos
 ```
 
-En esta Mac el `python3` del PATH (`/Library/Frameworks/.../3.8`) falla con "Bad CPU type", y `/usr/bin/python3` es 3.9, que no alcanza (popgrid pide >=3.10). Usar siempre `uv run`.
+En esta Mac el `python3` del PATH (`/Library/Frameworks/.../3.8`) falla con "Bad CPU type", y `/usr/bin/python3` es 3.9, que no alcanza (popgrid pide >=3.10). Usar siempre `uv run`. uv está en `~/.local/bin/uv` y puede no estar en el PATH de la shell. **`uv add` y `uv remove` resincronizan sin los extras y desinstalan pytest y ruff:** después correr `uv sync --extra dev`.
+
+## Estado y próximos pasos
+
+Hecho:
+- Población por provincia (1895-2022), Salta por departamento (1869-2022) y departamentos de todas las provincias (2001-2022).
+- Zonas de Salta y regiones del país.
+- Exportaciones por provincia (1993-2025).
+- Mapas, series en paneles y tablas, con tests y CI.
+
+Próximos pasos (detalle en la sección "Pendientes" del README):
+1. **PBI por provincia** con el VAB de CEPAL. Necesita que el usuario baje `Jurisdiccion_52sectores.xlsx` a `data/raw/cepal/`. Después: `scripts/construir_pbi.py` → `data/economia/pbi_provincias.csv` (`val_AAAA`) y una entrada `pbi` en `variables.VARIABLES`.
+2. **PBI por departamento:** VAB provincial de CEPAL repartido con la grilla de Kummu (Zenodo 10.5281/zenodo.16741980, idealmente la de 30"), usando `rasterio` y `exactextract`.
+3. Zonas para otras provincias (las define el usuario), empleo registrado por departamento (CEP XXI) y municipios a partir de radios censales.
 
 ## Arquitectura
 
@@ -32,11 +45,15 @@ En esta Mac el `python3` del PATH (`/Library/Frameworks/.../3.8`) falla con "Bad
   - **Censo disponible:** cada región esperada está cubierta exactamente una vez, directamente o por una fila compuesta, salvo las ausencias declaradas en `config.AUSENCIAS_SALTA` (Los Andes en 1869 y 1895).
 - `scripts/construir_salta_historico.py`: lee el cuadro 2.1.1 de la DGE Salta. Orán + San Martín viene en una fila *sin nombre* debajo de Orán. Controla sumas y que 2001-2022 coincida con el INDEC. El servidor de la DGE corta el TLS a veces (curl falla por el certificado; `requests` funciona) y el script reintenta.
 - `scripts/construir_censos.py`: une los cuadros 2001-2010 (que no traen códigos) con los de 2022 (que sí) emparejando por la población de 2010, que figura en los dos. Las únicas celdas vacías son Lezama (06466) y Tolhuin (94011), creados después de 2010.
-- `mapas.py`: `regiones_censo` arma las regiones de cada censo (une las geometrías de las filas compuestas y omite las regiones sin dato) y llama a `PopGrid.from_geodataframe(..., region_col="nombre", weight_col="pob_AAAA")`. Los colores se calculan una vez con las regiones actuales (`_colores`) y se pasan como `color_map` a todas las grillas; una fila compuesta toma el color de su primera parte. `comparar_censos` arma una grilla de hasta 4 columnas con `.draw(ax)` y agrupa en el pie las notas de cada censo.
+- `mapas.py`:
+  - `regiones_censo` arma las regiones de un año: une las geometrías de las filas compuestas, omite las regiones sin dato o con 0, y deja el peso en la columna `valor`.
+  - `grilla_variable` / `mapa_variable` dibujan una variable en un año; `comparar_censos(..., variable=)` dibuja varios años en grilla y `comparar_variables` pone varias variables del mismo año lado a lado. Todos usan `.draw(ax)` y `_figura_paneles`.
+  - Los colores se calculan una vez con las regiones actuales (`_colores`) y se pasan como `color_map` a todas las grillas. Una fila compuesta toma el color de su primera parte.
+  - Las notas del pie salen de `nota_censo` y se agrupan con `_agrupar_notas`, que resume en un rango los porcentajes repetidos año a año.
 
 ## Reglas de datos
 
-- **No inventar ni estimar cifras censales.** `data/censos/*.csv` lo generan `scripts/construir_censos.py` (INDEC) y `scripts/construir_salta_historico.py` (DGE Salta). Los enlaces están en `data/censos/FUENTES.md`. No editar a mano: si hay que corregir algo, corregir el script y regenerar.
+- **No inventar ni estimar cifras.** Todos los CSV de `data/censos/` y `data/economia/` los generan scripts a partir de fuentes oficiales: `construir_censos.py`, `construir_provincias_historico.py` y `construir_exportaciones.py` (INDEC), y `construir_salta_historico.py` (DGE Salta). Los enlaces están en los `FUENTES.md` de cada carpeta. No editar a mano: si hay que corregir algo, corregir el script y regenerar.
 - **Provincias 1895-1991:** `provincias_historico.csv` (`scripts/construir_provincias_historico.py`) tiene **porcentajes con un decimal**, del INDEC, Censo 2010, Tomo 1, Cuadro 7 (página 64 del PDF; se lee con `pypdf` en modo `layout`). Las columnas son `pct_AAAA`, no `pob_AAAA`. `cargar_censo("provincias")` une esta tabla con `provincias.csv`. Usar siempre `censos.columna(df, anio)` en vez de armar `f"pob_{anio}"`. Un valor 0 significa menos de 0,05% y no se dibuja. La población sin provincia asignada (1895 y 1914) está en `config.SIN_JURISDICCION_PCT`.
 - Para sumar un censo hay que agregar la columna `pob_AAAA`, su fuente en el script y una fila en FUENTES.md.
 - Las páginas del INDEC se cargan por JS. El listado real de cuadros del Censo 2022 está en `https://www.indec.gob.ar/Nivel4/Tema/2/41/165`, y el de 2010 por provincia en `/Nivel4/CensoProvincia/3/999/<cod_prov>/000/2010`.

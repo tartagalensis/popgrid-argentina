@@ -1,8 +1,8 @@
 # popgrid-argentina
 
-**Mapas de bloques de Argentina y de Salta: cómo cambió el peso de cada provincia y de cada departamento a lo largo de los censos. Salta por departamento desde 1869; provincias desde 1895.**
+**Mapas de bloques de Argentina y de Salta: cómo cambió el peso de cada provincia, región y departamento a lo largo de los censos, y cómo se compara con las exportaciones. Salta por departamento desde 1869; provincias desde 1895; exportaciones desde 1993.**
 
-Este proyecto usa [popgrid](https://github.com/databites-tech/popgrid) para dibujar *block cartograms*: mapas en los que **cada bloque representa la misma porción del total**. Con 1.000 bloques, cada uno equivale al 0,1% de la superficie o al 0,1% de la población. El mismo territorio, con los mismos colores, se dibuja de dos formas. Donde la tierra y la gente no coinciden aparece la historia.
+Este proyecto usa [popgrid](https://github.com/databites-tech/popgrid) para dibujar *block cartograms*: mapas en los que **cada bloque representa la misma porción del total**. Con 1.000 bloques, cada uno equivale al 0,1% de la superficie, de la población o de la variable que se mapee. El mismo territorio, con los mismos colores, se dibuja de varias formas. Donde la tierra, la gente y la economía no coinciden aparece la historia.
 
 Niveles de análisis:
 
@@ -88,7 +88,7 @@ pip install -e ".[dev]"
 uv run python scripts/descargar_limites.py
 ```
 
-Baja la capa de departamentos del [IGN](https://www.ign.gob.ar/) (~140 MB, queda en `data/raw/` y no se sube a git) y genera dos archivos livianos en `data/limites/`:
+Baja la capa de departamentos del [IGN](https://www.ign.gob.ar/) (~140 MB, queda en `data/raw/` y no se sube a git) y genera tres archivos livianos en `data/limites/`:
 
 - `provincias.geojson`: las 24 jurisdicciones, armadas uniendo departamentos. Se excluyen Antártida Argentina e Islas del Atlántico Sur.
 - `salta_departamentos.geojson`: los 23 departamentos de Salta.
@@ -157,16 +157,18 @@ uv run python scripts/grafico_serie.py zonas:salta
 uv run python scripts/grafico_serie.py zonas:argentina --columnas 3
 ```
 
-Opciones: `--censos 2010 2022` para elegir años, `--n 2000` para usar más bloques (más detalle para departamentos chicos) y `--out carpeta/`. Todo se guarda en `output/`.
+Opciones: `--variable poblacion|exportaciones`, `--censos 2010 2022` (o `--anios`) para elegir años, `--anio 2022` para el modo `variables`, `--n 2000` para usar más bloques (más detalle para departamentos chicos) y `--out carpeta/`. Todo se guarda en `output/`.
 
 ### Desde Python
 
 ```python
-from popgrid_ar.mapas import comparar_censos, mapa_poblacion
+from popgrid_ar.mapas import comparar_censos, comparar_variables, mapa_variable
 from popgrid_ar.censos import cargar_censo, tabla_participacion
 
-mapa_poblacion("salta", 2022).savefig("salta_2022.png", dpi=170, bbox_inches="tight")
-comparar_censos("provincias", [2001, 2022])
+mapa_variable("salta", 2022).savefig("salta_2022.png", dpi=170, bbox_inches="tight")
+mapa_variable("provincias", 2025, variable="exportaciones")
+comparar_censos("zonas:salta", [1869, 1947, 2022])
+comparar_variables("zonas:argentina", 2022)
 tabla_participacion(cargar_censo("salta"))
 ```
 
@@ -202,12 +204,26 @@ tabla_participacion(cargar_censo("salta"))
 
 ---
 
+## Estado
+
+Hecho:
+
+- **Población:** provincias de 1895 a 2022, departamentos de Salta de 1869 a 2022 y departamentos de todas las provincias de 2001 a 2022. Todo desde cuadros oficiales, con controles de suma.
+- **Zonas** como nivel de análisis: 7 zonas de Salta y 6 regiones del país, editables en `data/zonas/`.
+- **Exportaciones** por provincia y región, de 1993 a 2025, y comparación con la población (`--modo variables`).
+- **Visualizaciones:** mapas por censo o año, comparaciones en grilla, series en paneles chicos y tablas de participación.
+- **Calidad:** tests (`uv run pytest`) y CI en GitHub Actions.
+
 ## Pendientes
 
+En orden de prioridad sugerido:
+
+- **PBI por provincia.** La fuente adecuada es el VAB provincial de CEPAL y CEP XXI ([publicación 47900](https://www.cepal.org/es/publicaciones/47900-desagregacion-provincial-valor-agregado-bruto-la-argentina-base-2004), anexo `Jurisdiccion_52sectores.xlsx`). Su sitio bloquea las descargas automatizadas, así que hay que bajar el archivo a mano y dejarlo en `data/raw/cepal/`. Con eso falta un `scripts/construir_pbi.py` y sumar `pbi` a `variables.py`. La grilla de PBI de Kummu et al. se probó y se descartó por un quiebre en la serie de Córdoba. Ver [`data/economia/FUENTES.md`](data/economia/FUENTES.md).
+- **PBI por departamento.** Repartir el VAB provincial de CEPAL entre departamentos según la grilla de Kummu, usada solo para la distribución dentro de cada provincia. Conviene la grilla de 30", para que los departamentos chicos no queden mal medidos.
+- **Zonas para otras provincias.** Por ejemplo `data/zonas/jujuy.csv` (`codigo,departamento,zona`). La agrupación la tiene que definir alguien que conozca la provincia.
+- **Empleo registrado** por departamento (CEP XXI), como aproximación a la actividad económica local.
 - **Municipios.** No son una unidad de los censos: habría que componerlos a partir de radios censales (cartografía y datos por radio del INDEC) y definir qué radios forman cada municipio.
-- **PBI por provincia.** La fuente adecuada es el VAB provincial de CEPAL y CEP XXI, pero su sitio bloquea las descargas automatizadas: hay que bajar el archivo a mano. La grilla de PBI de Kummu et al. se probó y se descartó por un quiebre en la serie de Córdoba. Ver [`data/economia/FUENTES.md`](data/economia/FUENTES.md).
-- **PBI por departamento.** Una opción es repartir el VAB provincial de CEPAL entre departamentos según la grilla de Kummu (usada solo para la distribución dentro de cada provincia), con la grilla de 30" para que los departamentos chicos no queden mal medidos.
-- **Empleo registrado** por departamento (CEP XXI) como aproximación a la actividad económica local.
+- **Detalle menor:** la línea de fuente al pie de los mapas individuales dice "Source:" en inglés. Esa palabra la pone popgrid y no se puede cambiar desde sus opciones.
 
 ---
 
